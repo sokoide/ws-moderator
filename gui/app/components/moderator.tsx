@@ -82,31 +82,10 @@ const Moderator = () => {
                     height: "100vh",
                 }}
             >
-                <Box ref={messagePaneRef} sx={{ height: "85%", padding: 2, overflowY: 'auto', overflowX: 'auto' }}>
+                <Box ref={messagePaneRef} sx={{ height: "100%", padding: 2, overflowY: 'auto', overflowX: 'auto' }}>
                     {messages.map(function (msg, i) {
                         return <MessageBox message={msg} />;
                     })}
-                </Box>
-
-                <Box
-                    sx={{
-                        padding: 2,
-                        backgroundColor: green[300],
-                        textAlign: "center",
-                    }}
-                >
-                    <textarea
-                        ref={taRef}
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        placeholder="Type here..."
-                        rows={4}
-                        className="bordered-input"
-                    />
-
-                    <Button variant="contained" onClick={onSend}>
-                        Send
-                    </Button>
                 </Box>
             </Box>
         </>
