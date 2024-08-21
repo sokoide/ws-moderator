@@ -28,7 +28,7 @@ const Moderator = () => {
             console.log("useEffect: onmessage: %O", e.data);
             setMessages((prevMessages) => [
                 ...prevMessages,
-                { direction: "received", data: e.data },
+                { direction: "received", userEmail: "TODO", data: e.data },
             ]);
         };
 

@@ -33,7 +33,7 @@ const Chat = () => {
             console.log("useEffect: onmessage: %O", e.data);
             setMessages((prevMessages) => [
                 ...prevMessages,
-                { direction: "received", data: e.data },
+                { direction: "received", userEmail: "TODO", data: e.data },
             ]);
         };
 
@@ -65,6 +65,7 @@ const Chat = () => {
         if (socket && socket.readyState === WebSocket.OPEN) {
             let message: ChatItem = {
                 direction: "sent",
+                userEmail: loginInfo.email,
                 data: inputValue,
                 moderated: false,
                 approved: false,
