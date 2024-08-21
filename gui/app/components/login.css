@@ -1,0 +1,36 @@
+.wrapper {
+    display: flex;
+    align-items: center;
+    height: 90vh;
+}
+
+.content {
+    width: fit-content;
+    margin: auto;
+    text-align: center;
+}
+
+.input {
+    margin: 10px auto;
+}
+
+.username {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 8px;
+    margin: 10px;
+    display: inline-block;
+    margin-left: 5px;
+    padding: 2.5px 5px;
+}
+
+.button {
+    width: 150px;
+    height: 50px;
+    background-color: rgb(19, 19, 19);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin: 10px;
+    cursor: pointer;
+}

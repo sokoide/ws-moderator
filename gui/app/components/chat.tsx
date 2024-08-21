@@ -7,6 +7,7 @@ import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import MessageBox from "./messagebox";
 import { Message } from "./types";
+import { blue } from "@mui/material/colors";
 
 const Chat = () => {
     const [socket, setSocket] = useState<WebSocket | null>(null);
@@ -91,7 +92,7 @@ const Chat = () => {
                 <Box
                     sx={{
                         padding: 2,
-                        backgroundColor: "#3f51b5",
+                        backgroundColor: blue[50],
                         textAlign: "center",
                     }}
                 >
