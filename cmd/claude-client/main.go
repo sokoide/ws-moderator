@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type ClaudeMessage struct {
@@ -15,8 +17,8 @@ type ClaudeMessage struct {
 }
 
 type ClaudeRequest struct {
-	Model     string         `json:"model"`
-	MaxTokens int            `json:"max_tokens"`
+	Model     string          `json:"model"`
+	MaxTokens int             `json:"max_tokens"`
 	Messages  []ClaudeMessage `json:"messages"`
 }
 
@@ -29,20 +31,15 @@ type ClaudeContent struct {
 	Type string `json:"type"`
 }
 
-func callClaudeAPI(apiKey string, model string, prompt string) (string, error) {
-	url := "https://api.anthropic.com/v1/messages"
+var conversationHistory []ClaudeMessage
 
-	messages := []ClaudeMessage{
-		{
-			Role:    "user",
-			Content: prompt,
-		},
-	}
+func callClaudeAPI(apiKey string, model string) (string, error) {
+	url := "https://api.anthropic.com/v1/messages"
 
 	requestBody, err := json.Marshal(ClaudeRequest{
 		Model:     model,
 		MaxTokens: 1024,
-		Messages:  messages,
+		Messages:  conversationHistory,
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request: %v", err)
@@ -80,6 +77,11 @@ func callClaudeAPI(apiKey string, model string, prompt string) (string, error) {
 	}
 
 	if len(claudeResp.Content) > 0 {
+		// Update conversation history with the new assistant message
+		conversationHistory = append(conversationHistory, ClaudeMessage{
+			Role:    "assistant",
+			Content: claudeResp.Content[0].Text,
+		})
 		return claudeResp.Content[0].Text, nil
 	}
 
@@ -94,13 +96,27 @@ func main() {
 	}
 
 	model := "claude-3-5-sonnet-20240620" // Replace with the appropriate model
-	prompt := "Hello, world"
-	response, err := callClaudeAPI(apiKey, model, prompt)
-	if err != nil {
-		fmt.Printf("Error calling Claude API: %v\n", err)
-		return
-	}
 
-	fmt.Printf("Claude response: %s\n", response)
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Print("You: ")
+		userInput, _ := reader.ReadString('\n')
+		userInput = strings.TrimSpace(userInput)
+
+		// Update conversation history with the new user message
+		conversationHistory = append(conversationHistory, ClaudeMessage{
+			Role:    "user",
+			Content: userInput,
+		})
+
+		response, err := callClaudeAPI(apiKey, model)
+		if err != nil {
+			fmt.Printf("Error calling Claude API: %v\n", err)
+			return
+		}
+
+		fmt.Printf("Claude: %s\n", response)
+	}
 }
 
