@@ -6,13 +6,13 @@ import { AppContext } from "@/context/app-context";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import MessageBox from "./messagebox";
-import { Message } from "./types";
+import { ChatItem } from "./types";
 import { green } from "@mui/material/colors";
 
 const Moderator = () => {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [inputValue, setInputValue] = useState("");
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<ChatItem[]>([]);
     const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
     const { loginInfo, login, logout } = useContext(AppContext);
@@ -28,7 +28,7 @@ const Moderator = () => {
             console.log("useEffect: onmessage: %O", e.data);
             setMessages((prevMessages) => [
                 ...prevMessages,
-                { kind: "received", data: e.data },
+                { direction: "received", data: e.data },
             ]);
         };
 
@@ -58,8 +58,8 @@ const Moderator = () => {
     const onSend = () => {
         console.log("onSend: %O", inputValue);
         if (socket && socket.readyState === WebSocket.OPEN) {
-            let message: Message = {
-                kind: "sent",
+            let message: ChatItem = {
+                direction: "sent",
                 data: inputValue,
                 moderated: false,
                 approved: false,

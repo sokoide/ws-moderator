@@ -2,13 +2,13 @@
 
 import "./messagebox.css";
 import React, { useEffect, useState, useRef } from "react";
-import { Message } from "./types";
+import { ChatItem } from "./types";
 import Box from "@mui/material/Box";
 import RobotIcon from '@mui/icons-material/SmartToy';
 import UserIcon from '@mui/icons-material/Person';
 
 interface MessageProps {
-    message: Message;
+    message: ChatItem;
 }
 
 const MessageBox: React.FC<MessageProps> = ({message}) => {
@@ -22,7 +22,7 @@ const MessageBox: React.FC<MessageProps> = ({message}) => {
             p={2}
             sx={{ width: "95%", border: "2px solid grey", borderRadius: 1 }}
         >
-            {message.kind == "sent" ? <UserIcon/> : <RobotIcon/> }
+            {message.direction == "sent" ? <UserIcon/> : <RobotIcon/> }
             <p>{message.data}</p>
         </Box>
         <br/>

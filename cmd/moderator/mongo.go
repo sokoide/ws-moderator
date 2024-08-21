@@ -31,13 +31,14 @@ func init() {
 	}
 }
 
-func writeRequest(clientID string, messageText string, messageType string) {
+func storeRequest(clientID string, userEmail string, messageText string, messageKind string) {
 	ctx := context.TODO()
 
 	document := map[string]interface{}{
 		"clientID":    clientID,
+		"userEmail":   userEmail,
 		"messageText": messageText,
-		"messageType": messageType,
+		"messageType": messageKind,
 		"moderated":   false,
 		"approved":    false,
 	}
@@ -59,11 +60,11 @@ func writeRequest(clientID string, messageText string, messageType string) {
 	}
 
 	request := &ModRequest{
-		ID:       id.Hex(),
-		ClientID: clientID,
-		Kind:     messageType,
+		ID:        id.Hex(),
+		ClientID:  clientID,
+		UserEmail: userEmail,
 		Message: Message{
-			Kind: "txt",
+			Kind: messageKind,
 			Data: messageText,
 		},
 	}

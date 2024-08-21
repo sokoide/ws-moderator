@@ -6,9 +6,9 @@ type Message struct {
 }
 
 type ModRequest struct {
-	ID        string  `json:"id"`
-	ClientID  string  `json:"client_id"`
-	Kind      string  `json:"kind"`
+	ID        string  `json:"id"`        // MongoDB unique ID
+	ClientID  string  `json:"client_id"` // UUID
+	UserEmail string  `json:"user_email"`
 	Message   Message `json:"message"`
 	Approved  bool    `json:"approved"`
 	Moderated bool    `json:"moderated"`

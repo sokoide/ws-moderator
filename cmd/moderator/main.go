@@ -126,6 +126,9 @@ func startModerator() {
 		}
 		defer ws.Close()
 
+		// TODO: get UserName, UserEmail, Author from the request
+		userEmail := "tmp@tmp.com"
+
 		clientID := uuid.NewString()
 		err = ws.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("clientID: %s", clientID)))
 		if err != nil {
@@ -163,7 +166,7 @@ func startModerator() {
 			// TODO: moderate clientID and the prompt
 			// if moderated, send the prompt to LLM,
 			// then moderate, then return the answer or 'moderator refused'
-			writeRequest(clientID, string(message), "new")
+			storeRequest(clientID, userEmail, string(message), "txt")
 
 		}
 	})

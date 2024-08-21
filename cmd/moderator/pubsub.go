@@ -74,7 +74,7 @@ type NewRequestMonitor struct {
 }
 
 func (o *DatabaseMonitor) updated(request *ModRequest) {
-	if request.Kind == "updated" {
+	if request.UserEmail == "_system" {
 		log.Infof("[%s] message %s updated, clientID: %s", o.ID, request.Message.Data, request.ClientID)
 
 		// 		log.Infof("[%s] Mod Sending: %s", moderatorID, msg)
@@ -88,7 +88,7 @@ func (o *DatabaseMonitor) updated(request *ModRequest) {
 }
 
 func (o *NewRequestMonitor) updated(request *ModRequest) {
-	if request.Kind == "new" {
+	if request.UserEmail != "_system" {
 		log.Infof("[%s] new request %s", o.ID, request.Message.Data)
 		data, err := json.Marshal(request)
 		if err != nil {
