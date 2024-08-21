@@ -1,0 +1,14 @@
+.multi-line-text {
+    white-space: pre-line;
+    /* or pre-wrap */
+}
+
+.bordered-input {
+    border: 2px solid #007bff;
+    /* Example border color and width */
+    border-radius: 4px;
+    /* Optional: rounds the corners */
+    padding: 8px;
+    /* Optional: adds padding inside the input */
+    width: 100%;
+}

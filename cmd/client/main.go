@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
 	"time"
 
 	"github.com/minio/websocket"
@@ -20,7 +20,7 @@ type options struct {
 
 var o options = options{
 	host:     "localhost",
-	port:     8080,
+	port:     80,
 	logLevel: "INFO",
 }
 
@@ -40,7 +40,7 @@ func parseArgs() {
 
 func connectAndSend() {
 	// connect to o.host:o.port and send/receive websocket messages
-	u := "ws://" + o.host + ":" + strconv.FormatInt(int64(o.port), 10)
+	u := fmt.Sprintf("ws://%s:%d/chat", o.host, o.port)
 
 	log.Infof("Connecting to: %v", u)
 

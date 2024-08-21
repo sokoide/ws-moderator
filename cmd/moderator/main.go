@@ -17,7 +17,7 @@ type options struct {
 }
 
 var o options = options{
-	port:     8080,
+	port:     80,
 	logLevel: "INFO",
 }
 
@@ -35,10 +35,61 @@ func parseArgs() {
 func startModerator() {
 	log.Println("Starting WebSocket Moderator Server...")
 
-	var upgrader = &websocket.Upgrader{ReadBufferSize: 1024, WriteBufferSize: 1024}
+	var upgrader = &websocket.Upgrader{ReadBufferSize: 1024, WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			// Allow all connections by returning true
+			return true
+			// Alternatively,
+			// return r.Header.Get("Origin") == "http://allowed-origin.com"
+		}}
 
-	// "/" for chat
-	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+	// "/" for react
+
+	// "/moderator" from clients
+	http.HandleFunc("/moderator", func(writer http.ResponseWriter, request *http.Request) {
+		// TODO: add the caller as moderator
+		ws, err := upgrader.Upgrade(writer, request, nil)
+		if err != nil {
+			log.Info(err)
+			return
+		}
+		defer ws.Close()
+
+		moderatorID := uuid.NewString()
+		err = ws.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("moderatorID: %s", moderatorID)))
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		for {
+			_, message, err := ws.ReadMessage()
+			if err != nil {
+				// if disconnected, it comes here
+				log.Warnf("[%s] ReadMessage failed, %v", moderatorID, err)
+				break
+			}
+			log.Infof("[%s] Received Message: %s", moderatorID, string(message))
+
+			// TODO: moderate clientID and the prompt
+			// if moderated, send the prompt to LLM,
+			// then moderate, then return the answer or 'moderator refused'
+
+			// send a message to client.
+			msg := "hello"
+			log.Infof("[%s] Sending: %s", moderatorID, msg)
+			err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
+			if err != nil {
+				// if disconnected, it comes here
+				log.Warnf("[%s] WriteMessage failed, %v", moderatorID, err)
+				break
+			}
+		}
+
+	})
+
+	// "/chat" from clients
+	http.HandleFunc("/chat", func(writer http.ResponseWriter, request *http.Request) {
 		ws, err := upgrader.Upgrade(writer, request, nil)
 		if err != nil {
 			log.Info(err)
@@ -79,8 +130,6 @@ func startModerator() {
 			}
 		}
 	})
-
-	// TODO: "/image" for images
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", o.port), nil))
 }
