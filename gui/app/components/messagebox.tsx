@@ -12,6 +12,7 @@ interface MessageProps {
 }
 
 const MessageBox: React.FC<MessageProps> = ({message}) => {
+    console.info("message.data: %O", message.data);
     return (
         <>
         <Box whiteSpace="pre-line"
@@ -24,12 +25,7 @@ const MessageBox: React.FC<MessageProps> = ({message}) => {
             {message.kind == "sent" ? <UserIcon/> : <RobotIcon/> }
             <p>{message.data}</p>
         </Box>
-        <Box>
-            <p>moderated: {message.moderated}</p>
-        </Box>
-        <Box>
-            <p>approved: {message.approved}</p>
-        </Box>
+        <br/>
         </>
     );
 };

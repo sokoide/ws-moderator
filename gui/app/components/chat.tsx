@@ -63,10 +63,16 @@ const Chat = () => {
     const onSend = () => {
         console.log("onSend: %O", inputValue);
         if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(inputValue);
+            let message: Message = {
+                kind: "sent",
+                data: inputValue,
+                moderated: false,
+                approved: false,
+            };
+            socket.send(JSON.stringify(message));
             setMessages((prevMessages) => [
                 ...prevMessages,
-                { kind: "sent", data: inputValue },
+                message,
             ]);
             setInputValue("");
         } else {
@@ -82,48 +88,48 @@ const Chat = () => {
 
     return (
         <div>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "95vh",
+                }}
+            >
                 <Box
+                    ref={messagePaneRef}
                     sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        height: "95vh",
+                        height: "85%",
+                        padding: 2,
+                        overflowY: "auto",
+                        overflowX: "auto",
                     }}
                 >
-                    <Box
-                        ref={messagePaneRef}
-                        sx={{
-                            height: "85%",
-                            padding: 2,
-                            overflowY: "auto",
-                            overflowX: "auto",
-                        }}
-                    >
-                        {messages.map(function (msg, i) {
-                            return <MessageBox message={msg} />;
-                        })}
-                    </Box>
-
-                    <Box
-                        sx={{
-                            padding: 2,
-                            backgroundColor: blue[50],
-                            textAlign: "center",
-                        }}
-                    >
-                        <textarea
-                            ref={taRef}
-                            value={inputValue}
-                            onChange={handleInputChange}
-                            placeholder="Type here..."
-                            rows={4}
-                            className="bordered-input"
-                        />
-
-                        <Button variant="contained" onClick={onSend}>
-                            Send
-                        </Button>
-                    </Box>
+                    {messages.map(function (msg, i) {
+                        return <MessageBox message={msg} />;
+                    })}
                 </Box>
+
+                <Box
+                    sx={{
+                        padding: 2,
+                        backgroundColor: blue[50],
+                        textAlign: "center",
+                    }}
+                >
+                    <textarea
+                        ref={taRef}
+                        value={inputValue}
+                        onChange={handleInputChange}
+                        placeholder="Type here..."
+                        rows={4}
+                        className="bordered-input"
+                    />
+
+                    <Button variant="contained" onClick={onSend}>
+                        Send
+                    </Button>
+                </Box>
+            </Box>
         </div>
     );
 };

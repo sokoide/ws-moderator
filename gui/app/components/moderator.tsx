@@ -58,10 +58,16 @@ const Moderator = () => {
     const onSend = () => {
         console.log("onSend: %O", inputValue);
         if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(inputValue);
+            let message: Message = {
+                kind: "sent",
+                data: inputValue,
+                moderated: false,
+                approved: false,
+            };
+            socket.send(JSON.stringify(message));
             setMessages((prevMessages) => [
                 ...prevMessages,
-                { kind: "sent", data: inputValue },
+                message,
             ]);
             setInputValue("");
         } else {
