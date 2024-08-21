@@ -9,7 +9,12 @@ const getLoginInfo = () => {
 
     if (typeof window !== "undefined") {
         const stored = localStorage.getItem("loginInfo") || {loggedIn: false, username: "", employee: "", email: ""};
-        return stored ? JSON.parse(stored) : loginInfo;
+        try {
+            let ret = JSON.parse(stored);
+            return ret;
+        } catch(e) {
+            return loginInfo;
+        }
     }
     console.log(
         "getLoginInfo: window NOT available, using the empty login info"

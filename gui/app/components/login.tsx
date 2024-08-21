@@ -7,7 +7,6 @@ import Button from "@mui/material/Button";
 
 const Login = () => {
     const { loginInfo, login, logout } = useContext(AppContext);
-
     const [username, setUsername] = useState("");
     const [employee, setEmployee] = useState("");
     const [email, setEmail] = useState("");

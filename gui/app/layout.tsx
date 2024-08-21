@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppContextProvider } from "@/context/app-context";
 import dynamic from "next/dynamic";
 
+// https://nextjs.org/docs/messages/react-hydration-error
 const Navbar = dynamic(() => import("./components/navbar"), { ssr: false });
 
 const inter = Inter({ subsets: ["latin"] });

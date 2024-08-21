@@ -1,7 +1,8 @@
 "use client";
 
 import "./chat.css";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
+import { AppContext } from "@/context/app-context";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
@@ -10,11 +11,16 @@ import { Message } from "./types";
 import { blue } from "@mui/material/colors";
 
 const Chat = () => {
+    const { loginInfo, login, logout } = useContext(AppContext);
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [inputValue, setInputValue] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
+
+    if (loginInfo.loggedIn === false) {
+        window.location.href = "/login";
+    }
 
     useEffect(() => {
         const ws = new WebSocket("ws://127.0.0.1:80/chat");
@@ -49,7 +55,8 @@ const Chat = () => {
 
     useEffect(() => {
         if (messagePaneRef.current) {
-            messagePaneRef.current.scrollTop = messagePaneRef.current.scrollHeight;
+            messagePaneRef.current.scrollTop =
+                messagePaneRef.current.scrollHeight;
         }
     }, [messages]);
 
@@ -73,44 +80,51 @@ const Chat = () => {
 
     let userText = "1st line\n2nd line\n3rd line";
 
-
     return (
-        <>
-            <Box
-                sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "100vh",
-                }}
-            >
-                <Box ref={messagePaneRef} sx={{ height: "85%", padding: 2, overflowY: 'auto', overflowX: 'auto' }}>
-                    {messages.map(function (msg, i) {
-                        return <MessageBox message={msg} />;
-                    })}
-                </Box>
-
+        <div>
                 <Box
                     sx={{
-                        padding: 2,
-                        backgroundColor: blue[50],
-                        textAlign: "center",
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "95vh",
                     }}
                 >
-                    <textarea
-                        ref={taRef}
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        placeholder="Type here..."
-                        rows={4}
-                        className="bordered-input"
-                    />
+                    <Box
+                        ref={messagePaneRef}
+                        sx={{
+                            height: "85%",
+                            padding: 2,
+                            overflowY: "auto",
+                            overflowX: "auto",
+                        }}
+                    >
+                        {messages.map(function (msg, i) {
+                            return <MessageBox message={msg} />;
+                        })}
+                    </Box>
 
-                    <Button variant="contained" onClick={onSend}>
-                        Send
-                    </Button>
+                    <Box
+                        sx={{
+                            padding: 2,
+                            backgroundColor: blue[50],
+                            textAlign: "center",
+                        }}
+                    >
+                        <textarea
+                            ref={taRef}
+                            value={inputValue}
+                            onChange={handleInputChange}
+                            placeholder="Type here..."
+                            rows={4}
+                            className="bordered-input"
+                        />
+
+                        <Button variant="contained" onClick={onSend}>
+                            Send
+                        </Button>
+                    </Box>
                 </Box>
-            </Box>
-        </>
+        </div>
     );
 };
 

@@ -1,7 +1,8 @@
 "use client";
 
 import "./chat.css";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
+import { AppContext } from "@/context/app-context";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import MessageBox from "./messagebox";
@@ -14,6 +15,7 @@ const Moderator = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
+    const { loginInfo, login, logout } = useContext(AppContext);
 
     useEffect(() => {
         const ws = new WebSocket("ws://127.0.0.1:80/moderator");
@@ -48,7 +50,8 @@ const Moderator = () => {
 
     useEffect(() => {
         if (messagePaneRef.current) {
-            messagePaneRef.current.scrollTop = messagePaneRef.current.scrollHeight;
+            messagePaneRef.current.scrollTop =
+                messagePaneRef.current.scrollHeight;
         }
     }, [messages]);
 
@@ -70,25 +73,30 @@ const Moderator = () => {
         setInputValue(e.target.value);
     };
 
-    let userText = "1st line\n2nd line\n3rd line";
-
-
     return (
-        <>
+        <div>
             <Box
                 sx={{
                     display: "flex",
                     flexDirection: "column",
-                    height: "100vh",
+                    height: "95vh",
                 }}
             >
-                <Box ref={messagePaneRef} sx={{ height: "100%", padding: 2, overflowY: 'auto', overflowX: 'auto' }}>
+                <Box
+                    ref={messagePaneRef}
+                    sx={{
+                        height: "100%",
+                        padding: 2,
+                        overflowY: "auto",
+                        overflowX: "auto",
+                    }}
+                >
                     {messages.map(function (msg, i) {
                         return <MessageBox message={msg} />;
                     })}
                 </Box>
             </Box>
-        </>
+        </div>
     );
 };
 
