@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Chat from "./components/chat"
 
-export default function Home() {
+const HomePage = () => {
   return (
     <>
     <Chat/>
     </>
   );
-}
+};
+
+export default HomePage;
