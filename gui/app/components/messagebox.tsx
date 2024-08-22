@@ -12,9 +12,9 @@ interface MessageProps {
 }
 
 const MessageBox: React.FC<MessageProps> = ({ message }) => {
-    console.info("message.data: %O", message.data);
+    console.info("message: %O", message);
 
-    if (!message.userEmail.endsWith("@_system")){
+    if (typeof message.userEmail != 'undefined' && !message.userEmail.endsWith("@_system")){
         return (
             <>
                 <Box
@@ -40,7 +40,31 @@ const MessageBox: React.FC<MessageProps> = ({ message }) => {
             </>
         );
     } else {
-        return <>TODO:</>;
+        // TODO
+        return (
+            <>
+                <Box
+                    whiteSpace="pre-line"
+                    my={0}
+                    display="flex"
+                    gap={2}
+                    p={2}
+                    sx={{
+                        width: "95%",
+                        border: "2px solid grey",
+                        borderRadius: 1,
+                    }}
+                >
+                    {message.direction === "sent" ? (
+                        <UserIcon />
+                    ) : (
+                        <RobotIcon />
+                    )}
+                    <p>{message.data}</p>
+                </Box>
+                <br />
+            </>
+        );
     }
 };
 
