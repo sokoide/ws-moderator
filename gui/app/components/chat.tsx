@@ -7,7 +7,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import MessageBox from "./messagebox";
-import { ChatItem, Message, ModRequest } from "./types";
+import { Message, ModRequest } from "./types";
 import { blue } from "@mui/material/colors";
 import { v4 as uuid } from "uuid";
 
@@ -31,10 +31,11 @@ const Chat = () => {
         };
 
         ws.onmessage = (e) => {
-            console.log("useEffect: onmessage: %O", e.data);
+            let msg = JSON.parse(e.data) as ModRequest
+            console.log("useEffect: onmessage: %O", msg);
             setMessages((prevMessages) => [
                 ...prevMessages,
-                // { userEmail: "TODO", data: e.data },
+                msg,
             ]);
         };
 

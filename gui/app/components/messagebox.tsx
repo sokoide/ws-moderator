@@ -2,7 +2,7 @@
 
 import "./messagebox.css";
 import React, { useEffect, useState, useRef } from "react";
-import { ChatItem, Message, ModRequest } from "./types";
+import { Message, ModRequest } from "./types";
 import Box from "@mui/material/Box";
 import RobotIcon from "@mui/icons-material/SmartToy";
 import UserIcon from "@mui/icons-material/Person";

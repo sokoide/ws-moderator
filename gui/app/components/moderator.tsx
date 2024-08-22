@@ -26,11 +26,11 @@ const Moderator = () => {
         };
 
         ws.onmessage = (e) => {
-            let m = e.data as ModRequest;
-            console.log("useEffect: onmessage: %O", m);
+            let msg = JSON.parse(e.data) as ModRequest;
+            console.log("useEffect: onmessage: %O", msg);
             setMessages((prevMessages) => [
                 ...prevMessages,
-                // { from: m.from, userEmail: m.user_email, data: m.message.data },
+                msg,
             ]);
         };
 
