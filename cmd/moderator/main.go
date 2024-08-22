@@ -148,7 +148,6 @@ func startModerator() {
 		clientID := uuid.NewString()
 		msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", fmt.Sprintf("clientID: %s", clientID))
 		err = ws.WriteMessage(websocket.TextMessage, msg)
-
 		if err != nil {
 			log.Error(err)
 			return
@@ -195,6 +194,16 @@ func startModerator() {
 				// TODO: image generation
 			} else {
 				// TODO: text generation
+				// time.Sleep(time.Second)
+
+				storeRequest(clientID, req.UserEmail, "Dummy response from Claude3...", "txt")
+				// msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Dummy answer from Claude3...")
+				// err = ws.WriteMessage(websocket.TextMessage, msg)
+				// if err != nil {
+				// 	// if disconnected, it comes here
+				// 	log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
+				// 	break
+				// }
 			}
 
 			// TODO: moderate clientID and the prompt
