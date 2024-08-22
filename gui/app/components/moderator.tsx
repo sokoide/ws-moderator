@@ -28,6 +28,7 @@ const Moderator = () => {
         ws.onmessage = (e) => {
             let msg = JSON.parse(e.data) as ModRequest;
             console.log("useEffect: onmessage: %O", msg);
+            if (msg.message.kind === "ping") return;
             setMessages((prevMessages) => [
                 ...prevMessages,
                 msg,

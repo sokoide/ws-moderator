@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/minio/websocket"
@@ -37,7 +40,7 @@ func parseArgs() {
 }
 
 func startModerator() {
-	log.Println("Starting WebSocket Moderator Server...")
+	log.Info("Starting WebSocket Moderator Server...")
 
 	var upgrader = &websocket.Upgrader{ReadBufferSize: 1024, WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
@@ -51,7 +54,6 @@ func startModerator() {
 
 	// "/moderator" from clients
 	http.HandleFunc("/moderator", func(writer http.ResponseWriter, request *http.Request) {
-		// TODO: add the caller as moderator
 		ws, err := upgrader.Upgrade(writer, request, nil)
 		if err != nil {
 			log.Info(err)
@@ -60,7 +62,7 @@ func startModerator() {
 		defer ws.Close()
 
 		moderatorID := uuid.NewString()
-		msg := makeModRequestJsonBytes("", moderatorID, "system@system", "txt", fmt.Sprintf("clientID: %s", moderatorID))
+		msg := makeModRequestJsonBytes("", moderatorID, "system@system", "txt", fmt.Sprintf("moderatorID: %s", moderatorID))
 		err = ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Error(err)
@@ -73,6 +75,9 @@ func startModerator() {
 		}
 		db.register(monitor)
 		defer db.unregister(monitor)
+
+		ticker := time.NewTicker(time.Second * 5)
+		defer ticker.Stop()
 
 		for {
 			// _, message, err := ws.ReadMessage()
@@ -114,6 +119,19 @@ func startModerator() {
 			// 		req.ReturnChannel <- true
 			// 	}
 			// }
+			for {
+				select {
+				case <-ticker.C:
+					log.Debug("tick")
+					msg := makeModRequestJsonBytes("", moderatorID, "system@system", "ping", "ping")
+					err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
+					if err != nil {
+						// if disconnected, it comes here
+						log.Warnf("[%s] Mod WriteMessage failed, %v", moderatorID, err)
+						return
+					}
+				}
+			}
 		}
 
 	})
@@ -126,9 +144,6 @@ func startModerator() {
 			return
 		}
 		defer ws.Close()
-
-		// TODO: get UserName, UserEmail, Author from the request
-		userEmail := "tmp@tmp.com"
 
 		clientID := uuid.NewString()
 		msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", fmt.Sprintf("clientID: %s", clientID))
@@ -156,6 +171,16 @@ func startModerator() {
 			}
 			log.Infof("[%s] Received Message: %s", clientID, string(message))
 
+			// convert message into ModRequest
+			var req ModRequest
+			err = json.Unmarshal(message, &req)
+			if err != nil {
+				log.Errorf("[%s] failed to parse %s", clientID, string(message))
+				continue
+			}
+			// save it
+			storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind)
+
 			// send a message to client.
 			msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Moderating...")
 			err = ws.WriteMessage(websocket.TextMessage, msg)
@@ -165,10 +190,16 @@ func startModerator() {
 				break
 			}
 
+			// call AI
+			if strings.HasPrefix(req.Message.Data, "/imagine") {
+				// TODO: image generation
+			} else {
+				// TODO: text generation
+			}
+
 			// TODO: moderate clientID and the prompt
 			// if moderated, send the prompt to LLM,
 			// then moderate, then return the answer or 'moderator refused'
-			storeRequest(clientID, userEmail, string(message), "txt")
 
 		}
 	})

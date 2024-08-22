@@ -28,7 +28,7 @@ const MessageBox: React.FC<MessageProps> = ({ msg }) => {
                     borderRadius: 1,
                 }}
             >
-                {msg.user_email !== "system" ? <UserIcon /> : <RobotIcon />}
+                {msg.user_email !== "system@system" ? <UserIcon /> : <RobotIcon />}
                 <p>{msg.message.data}</p>
             </Box>
             <br />

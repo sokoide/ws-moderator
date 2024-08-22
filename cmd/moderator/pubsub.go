@@ -28,6 +28,7 @@ func (db *Database) register(o Observer) {
 	db.mtx.Lock()
 	defer db.mtx.Unlock()
 
+	log.Infof("register: adding: %v", o)
 	db.observers = append(db.observers, o)
 }
 
@@ -40,11 +41,15 @@ func (db *Database) unregister(o Observer) {
 	for idx, value := range db.observers {
 		if value == o {
 			idxToRemove = idx
+			break
 		}
 	}
 
 	if idxToRemove >= 0 {
+		log.Infof("unregister: removing: %v", o)
 		db.observers = append(db.observers[:idxToRemove], db.observers[idxToRemove+1:]...)
+	} else {
+		log.Errorf("unregister: failed to remove %v", o)
 	}
 }
 
@@ -74,7 +79,7 @@ type NewRequestMonitor struct {
 }
 
 func (o *DatabaseMonitor) updated(request *ModRequest) {
-	if request.UserEmail == "_system" {
+	if request.UserEmail == "system@system" {
 		log.Infof("[%s] message %s updated, clientID: %s", o.ID, request.Message.Data, request.ClientID)
 
 		// 		log.Infof("[%s] Mod Sending: %s", moderatorID, msg)
@@ -88,12 +93,12 @@ func (o *DatabaseMonitor) updated(request *ModRequest) {
 }
 
 func (o *NewRequestMonitor) updated(request *ModRequest) {
-	if request.UserEmail != "_system" {
+	if request.UserEmail != "system@system" {
 		log.Infof("[%s] new request %s", o.ID, request.Message.Data)
 		data, err := json.Marshal(request)
 		if err != nil {
 			// if disconnected, it comes here
-			log.Warnf("[%s] Mod WriteMessage failed in json.Marshal, %v", o.ID, err)
+			log.Warnf("[%s] json.Marshal failed in updated, %v", o.ID, err)
 			return
 		}
 
