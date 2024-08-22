@@ -60,7 +60,8 @@ func startModerator() {
 		defer ws.Close()
 
 		moderatorID := uuid.NewString()
-		err = ws.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("moderatorID: %s", moderatorID)))
+		msg := makeModRequestJsonBytes("", moderatorID, "system@system", "txt", fmt.Sprintf("clientID: %s", moderatorID))
+		err = ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Error(err)
 			return
@@ -130,7 +131,9 @@ func startModerator() {
 		userEmail := "tmp@tmp.com"
 
 		clientID := uuid.NewString()
-		err = ws.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("clientID: %s", clientID)))
+		msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", fmt.Sprintf("clientID: %s", clientID))
+		err = ws.WriteMessage(websocket.TextMessage, msg)
+
 		if err != nil {
 			log.Error(err)
 			return
@@ -154,9 +157,8 @@ func startModerator() {
 			log.Infof("[%s] Received Message: %s", clientID, string(message))
 
 			// send a message to client.
-			msg := "Moderating..."
-			log.Infof("[%s] Sending: %s", clientID, msg)
-			err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
+			msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Moderating...")
+			err = ws.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
 				// if disconnected, it comes here
 				log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
