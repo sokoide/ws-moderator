@@ -7,14 +7,15 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import MessageBox from "./messagebox";
-import { ChatItem } from "./types";
+import { ChatItem, Message, ModRequest } from "./types";
 import { blue } from "@mui/material/colors";
+import { v4 as uuid } from "uuid";
 
 const Chat = () => {
     const { loginInfo, login, logout } = useContext(AppContext);
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [inputValue, setInputValue] = useState("");
-    const [messages, setMessages] = useState<ChatItem[]>([]);
+    const [messages, setMessages] = useState<ModRequest[]>([]);
     const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
 
@@ -33,7 +34,7 @@ const Chat = () => {
             console.log("useEffect: onmessage: %O", e.data);
             setMessages((prevMessages) => [
                 ...prevMessages,
-                { direction: "received", userEmail: "TODO", data: e.data },
+                // { userEmail: "TODO", data: e.data },
             ]);
         };
 
@@ -63,18 +64,19 @@ const Chat = () => {
     const onSend = () => {
         console.log("onSend: %O", inputValue);
         if (socket && socket.readyState === WebSocket.OPEN) {
-            let message: ChatItem = {
-                direction: "sent",
-                userEmail: loginInfo.email,
-                data: inputValue,
-                moderated: false,
+            let msg: ModRequest = {
+                id: "",
+                client_id: "",
+                user_email: loginInfo.email,
+                message: {
+                    kind: "txt",
+                    data: inputValue,
+                },
                 approved: false,
+                moderated: false,
             };
-            socket.send(JSON.stringify(message));
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                message,
-            ]);
+            socket.send(JSON.stringify(msg));
+            setMessages((prevMessages) => [...prevMessages, msg]);
             setInputValue("");
         } else {
             console.error("WebSocket is not open");
@@ -106,7 +108,7 @@ const Chat = () => {
                     }}
                 >
                     {messages.map(function (msg, i) {
-                        return <MessageBox message={msg} />;
+                        return <MessageBox msg={msg} key={uuid()} />;
                     })}
                 </Box>
 

@@ -6,13 +6,14 @@ import { AppContext } from "@/context/app-context";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import MessageBox from "./messagebox";
-import { ChatItem } from "./types";
+import { Message, ModRequest } from "./types";
 import { green } from "@mui/material/colors";
+import { v4 as uuid } from "uuid";
 
 const Moderator = () => {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [inputValue, setInputValue] = useState("");
-    const [messages, setMessages] = useState<ChatItem[]>([]);
+    const [messages, setMessages] = useState<ModRequest[]>([]);
     const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
     const { loginInfo, login, logout } = useContext(AppContext);
@@ -25,10 +26,11 @@ const Moderator = () => {
         };
 
         ws.onmessage = (e) => {
-            console.log("useEffect: onmessage: %O", e.data);
+            let m = e.data as ModRequest;
+            console.log("useEffect: onmessage: %O", m);
             setMessages((prevMessages) => [
                 ...prevMessages,
-                { direction: "received", userEmail: "TODO", data: e.data },
+                // { from: m.from, userEmail: m.user_email, data: m.message.data },
             ]);
         };
 
@@ -58,17 +60,20 @@ const Moderator = () => {
     const onSend = () => {
         console.log("onSend: %O", inputValue);
         if (socket && socket.readyState === WebSocket.OPEN) {
-            let message: ChatItem = {
-                direction: "sent",
-                data: inputValue,
-                moderated: false,
+            let msg: ModRequest = {
+                id: "",
+                client_id: "",
+                user: "user",
+                user_email: loginInfo.email,
+                message: {
+                    kind: "txt",
+                    data: inputValue,
+                },
                 approved: false,
+                moderated: false,
             };
-            socket.send(JSON.stringify(message));
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                message,
-            ]);
+            socket.send(JSON.stringify(msg));
+            setMessages((prevMessages) => [...prevMessages, msg]);
             setInputValue("");
         } else {
             console.error("WebSocket is not open");
@@ -98,7 +103,7 @@ const Moderator = () => {
                     }}
                 >
                     {messages.map(function (msg, i) {
-                        return <MessageBox message={msg} />;
+                        return <MessageBox msg={msg} key={uuid()} />;
                     })}
                 </Box>
             </Box>

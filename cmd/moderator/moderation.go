@@ -14,6 +14,7 @@ type Message struct {
 type ModRequest struct {
 	ID        string  `json:"id"`        // MongoDB unique ID
 	ClientID  string  `json:"client_id"` // UUID
+	User      string  `json:"user"`
 	UserEmail string  `json:"user_email"`
 	Message   Message `json:"message"`
 	Approved  bool    `json:"approved"`
@@ -24,6 +25,7 @@ func newModRequest(id string, clientID string, userEmail string, kind string, te
 	return &ModRequest{
 		ID:        id,
 		ClientID:  clientID,
+		User:      "system",
 		UserEmail: userEmail,
 		Message:   Message{Kind: kind, Data: text},
 		Approved:  false,
