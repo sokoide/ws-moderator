@@ -76,49 +76,42 @@ func startModerator() {
 		db.register(monitor)
 		defer db.unregister(monitor)
 
+		_, message, err := ws.ReadMessage()
+		if err != nil {
+			// if disconnected, it comes here
+			log.Warnf("[%s] ReadMessage failed, %v", moderatorID, err)
+			return
+		}
+		log.Infof("[%s] Received Message: %s", moderatorID, string(message))
+
+		// convert message into ModRequest
+		var req ModRequest
+		err = json.Unmarshal(message, &req)
+		if err != nil {
+			log.Errorf("[%s] failed to parse %s", moderatorID, string(message))
+			return
+		}
+
+		if req.Message.Kind == "system" && req.Message.Data == "" {
+			// return all non-moderated documents
+			reqs := loadRequests(false)
+			for _, req := range reqs {
+				msg := makeModRequestJsonBytes(req.ID, req.ClientID, req.UserEmail, req.Message.Kind, req.Message.Data, req.Approved, req.Moderated)
+				log.Debugf("sending %+v", req)
+				err = ws.WriteMessage(websocket.TextMessage, msg)
+				if err != nil {
+					// if disconnected, it comes here
+					log.Warnf("[%s] WriteMessage failed, %v", moderatorID, err)
+					return
+				}
+			}
+		}
+
+		// ping
 		ticker := time.NewTicker(time.Second * 5)
 		defer ticker.Stop()
 
 		for {
-			// _, message, err := ws.ReadMessage()
-			// if err != nil {
-			// 	// if disconnected, it comes here
-			// 	log.Warnf("[%s] ReadMessage failed, %v", moderatorID, err)
-			// 	break
-			// }
-			// log.Infof("[%s] Received Message: %s", moderatorID, string(message))
-
-			// TODO: moderate clientID and the prompt
-			// if moderated, send the prompt to LLM,
-			// then moderate, then return the answer or 'moderator refused'
-
-			// send a message to the moderator service
-			// msg := "hello"
-			// log.Infof("[%s] Sending: %s", moderatorID, msg)
-			// err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
-			// if err != nil {
-			// 	// if disconnected, it comes here
-			// 	log.Warnf("[%s] WriteMessage failed, %v", moderatorID, err)
-			// 	break
-			// }
-
-			// for {
-			// 	select {
-			// 	case req := <-modQ:
-			// 		log.Infof("[%s] Mod req: %+v", moderatorID, req)
-			// 		msg := fmt.Sprintf("[%s] req: %s", req.ClientID, req.Message.Data)
-
-			// 		log.Infof("[%s] Mod Sending: %s", moderatorID, msg)
-			// 		err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
-			// 		if err != nil {
-			// 			// if disconnected, it comes here
-			// 			log.Warnf("[%s] Mod WriteMessage failed, %v", moderatorID, err)
-			// 			break
-			// 		}
-
-			// 		req.ReturnChannel <- true
-			// 	}
-			// }
 			for {
 				select {
 				case <-ticker.C:

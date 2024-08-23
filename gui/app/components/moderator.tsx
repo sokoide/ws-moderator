@@ -23,16 +23,25 @@ const Moderator = () => {
 
         ws.onopen = () => {
             console.log("useEffect: onopen");
+            let msg: ModRequest = {
+                id: "",
+                client_id: "",
+                user_email: "",
+                message: {
+                    kind: "system",
+                    data: "",
+                },
+                approved: false,
+                moderated: false,
+            };
+            ws.send(JSON.stringify(msg));
         };
 
         ws.onmessage = (e) => {
             let msg = JSON.parse(e.data) as ModRequest;
             console.log("useEffect: onmessage: %O", msg);
             if (msg.message.kind === "ping") return;
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                msg,
-            ]);
+            setMessages((prevMessages) => [...prevMessages, msg]);
         };
 
         ws.onerror = (error) => {

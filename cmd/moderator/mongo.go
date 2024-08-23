@@ -89,18 +89,14 @@ func loadRequestsForUserEmail(userEmail string) []ModRequest {
 		} else {
 			log.Debugf("Found document: %v\n", document)
 
-			request := ModRequest{
-				ID:        document["_id"].(primitive.ObjectID).Hex(),
-				ClientID:  document["client_id"].(string),
-				UserEmail: userEmail,
-				Message: Message{
-					Kind: document["message_kind"].(string),
-					Data: document["message_data"].(string),
-				},
-				Approved:  document["approved"].(bool),
-				Moderated: document["moderated"].(bool),
-			}
-			requests = append(requests, request)
+			request := newModRequest(document["_id"].(primitive.ObjectID).Hex(),
+				document["client_id"].(string),
+				document["user_email"].(string),
+				document["message_kind"].(string),
+				document["message_data"].(string),
+				document["approved"].(bool),
+				document["moderated"].(bool))
+			requests = append(requests, *request)
 		}
 	}
 
@@ -110,8 +106,45 @@ func loadRequestsForUserEmail(userEmail string) []ModRequest {
 	return requests
 }
 
-func loadRequests(approved string) []ModRequest {
-	return []ModRequest{}
+func loadRequests(moderated bool) []ModRequest {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	requests := make([]ModRequest, 0)
+
+	collection := client.Database(MONGODB_NAME).Collection(MONGODB_COLLECTION)
+	// get all documents whose approved==false && moderated==moderated
+	filter := bson.M{"moderated": moderated, "approved": false}
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		log.Errorf("Failed to get MongoDB Objects for moderated=%v", moderated)
+		return requests
+	}
+
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var document map[string]interface{}
+		if err := cursor.Decode(&document); err != nil {
+			log.Errorf("error %v in loadRequests cursor.Decode", err)
+		} else {
+			log.Debugf("Found document: %v\n", document)
+
+			request := newModRequest(document["_id"].(primitive.ObjectID).Hex(),
+				document["client_id"].(string),
+				document["user_email"].(string),
+				document["message_kind"].(string),
+				document["message_data"].(string),
+				document["approved"].(bool),
+				document["moderated"].(bool))
+			requests = append(requests, *request)
+		}
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Errorf("error %v in loadRequests", err)
+	}
+	return requests
 }
 
 func writeMongoSpike() {
