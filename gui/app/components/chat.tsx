@@ -24,6 +24,7 @@ const Chat = () => {
     }
 
     useEffect(() => {
+        // TODO: replace it with socket.io?
         const ws = new WebSocket("ws://127.0.0.1:80/chat");
 
         ws.onopen = () => {

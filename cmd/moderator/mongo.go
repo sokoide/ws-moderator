@@ -35,19 +35,29 @@ func storeRequest(clientID string, userEmail string, messageText string, message
 	ctx := context.TODO()
 
 	document := map[string]interface{}{
-		"clientID":    clientID,
-		"userEmail":   userEmail,
+		"client_id":   clientID,
+		"user_email":  userEmail,
 		"messageText": messageText,
 		"messageType": messageKind,
 		"approved":    approved,
 		"moderated":   moderated,
 	}
-
+	request := &ModRequest{
+		ID:        "",
+		ClientID:  clientID,
+		UserEmail: userEmail,
+		Message: Message{
+			Kind: messageKind,
+			Data: messageText,
+		},
+		Approved:  approved,
+		Moderated: moderated,
+	}
 	collection := client.Database(MONGODB_NAME).Collection(MONGODB_COLLECTION)
 
 	insertResult, err := collection.InsertOne(ctx, document)
 	if err != nil {
-		log.Errorf("Failed to write in MongoDB, %v", err)
+		log.Errorf("Failed to write %v in MongoDB, %v", document, err)
 		return
 	}
 
@@ -59,18 +69,7 @@ func storeRequest(clientID string, userEmail string, messageText string, message
 		return
 	}
 
-	request := &ModRequest{
-		ID:        id.Hex(),
-		ClientID:  clientID,
-		UserEmail: userEmail,
-		Message: Message{
-			Kind: messageKind,
-			Data: messageText,
-		},
-		Approved:  approved,
-		Moderated: moderated,
-	}
-
+	request.ID = id.Hex()
 	db.notifyObservers(request)
 }
 
