@@ -25,7 +25,6 @@ func newModRequest(id string, clientID string, userEmail string, kind string, te
 	return &ModRequest{
 		ID:        id,
 		ClientID:  clientID,
-		User:      "system",
 		UserEmail: userEmail,
 		Message:   Message{Kind: kind, Data: text},
 		Approved:  approved,

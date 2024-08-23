@@ -29,6 +29,19 @@ const Chat = () => {
 
         ws.onopen = () => {
             console.log("useEffect: onopen");
+
+            let msg: ModRequest = {
+                id: "",
+                client_id: "",
+                user_email: loginInfo.email,
+                message: {
+                    kind: "system",
+                    data: "",
+                },
+                approved: false,
+                moderated: false,
+            };
+            ws.send(JSON.stringify(msg));
         };
 
         ws.onmessage = (e) => {

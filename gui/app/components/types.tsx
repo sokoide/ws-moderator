@@ -8,7 +8,6 @@ export interface Message {
 export interface ModRequest {
     id: string,
     client_id: string,
-    user: string,
     user_email: string,
     message: Message,
     approved: boolean,

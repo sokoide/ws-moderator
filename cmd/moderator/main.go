@@ -177,8 +177,24 @@ func startModerator() {
 				log.Errorf("[%s] failed to parse %s", clientID, string(message))
 				continue
 			}
+			if req.Message.Kind == "system" && req.Message.Data == "" {
+				// return all approved documents for the user
+				reqs := loadRequestsForUserEmail(req.UserEmail)
+				for _, req := range reqs {
+					msg := makeModRequestJsonBytes(req.ID, req.ClientID, req.UserEmail, req.Message.Kind, req.Message.Data, req.Approved, req.Moderated)
+					log.Debugf("sending %+v", req)
+					err = ws.WriteMessage(websocket.TextMessage, msg)
+					if err != nil {
+						// if disconnected, it comes here
+						log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
+						break
+					}
+				}
+				continue
+			}
+
 			// save it
-			storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, false, true)
+			storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, true, true)
 
 			// send a message to client.
 			msg := makeModRequestJsonBytes("", "bot", "", "txt", "Moderating & generating...", true, false)
@@ -194,22 +210,8 @@ func startModerator() {
 				// TODO: image generation
 			} else {
 				// TODO: text generation
-				// time.Sleep(time.Second)
-
-				// storeRequest(clientID, req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
 				storeRequest("bot", req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
-				// err = ws.WriteMessage(websocket.TextMessage, msg)
-				// if err != nil {
-				// 	// if disconnected, it comes here
-				// 	log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
-				// 	break
-				// }
 			}
-
-			// TODO: moderate clientID and the prompt
-			// if moderated, send the prompt to LLM,
-			// then moderate, then return the answer or 'moderator refused'
-
 		}
 	})
 
