@@ -12,7 +12,7 @@ interface MessageProps {
     moderator: boolean;
 }
 
-const MessageBox: React.FC<MessageProps> = ({ msg }) => {
+const MessageBox: React.FC<MessageProps> = ({ msg, moderator }) => {
     console.info("message: %O", msg);
 
     return (
@@ -29,8 +29,8 @@ const MessageBox: React.FC<MessageProps> = ({ msg }) => {
                     borderRadius: 1,
                 }}
             >
-                {msg.user_email !== "system@system" ? <UserIcon /> : <RobotIcon />}
-                <p>{msg.message.data}</p>
+                {msg.client_id !== "bot" ? <UserIcon /> : <RobotIcon />}
+                {moderator ? <p>{msg.message.data}</p> : <p>{msg.message.data}</p>}
             </Box>
             <br />
         </>
