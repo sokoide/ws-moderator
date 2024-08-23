@@ -73,7 +73,6 @@ const Moderator = () => {
             let msg: ModRequest = {
                 id: "",
                 client_id: "",
-                user: "user",
                 user_email: loginInfo.email,
                 message: {
                     kind: "txt",
@@ -92,6 +91,28 @@ const Moderator = () => {
 
     const handleInputChange = (e) => {
         setInputValue(e.target.value);
+    };
+
+    const handleApprove = (msgid) => {
+        console.log("handleApprove: %O", msgid);
+        // TODO: send message
+        // let msg: ModRequest = {
+        //     id: msgid,
+        //     client_id: "",
+        //     user_email: loginInfo.email,
+        //     message: {
+        //         kind: "system",
+        //         data: "approve",
+        //     },
+        //     approved: false,
+        //     moderated: false,
+        // };
+        // socket.send(JSON.stringify(msg));
+    };
+
+    const handleDeny = (msgid) => {
+        console.log("handleDeny: %O", msgid);
+        // TODO: send message
     };
 
     return (
@@ -113,7 +134,14 @@ const Moderator = () => {
                     }}
                 >
                     {messages.map(function (msg, i) {
-                        return <ModeratorMessageBox msg={msg} key={uuid()} />;
+                        return (
+                            <ModeratorMessageBox
+                                msg={msg}
+                                onApprove={handleApprove}
+                                onDeny={handleDeny}
+                                key={uuid()}
+                            />
+                        );
                     })}
                 </Box>
             </Box>
