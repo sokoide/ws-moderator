@@ -104,7 +104,7 @@ const Moderator = () => {
                     }}
                 >
                     {messages.map(function (msg, i) {
-                        return <MessageBox msg={msg} key={uuid()} />;
+                        return <MessageBox msg={msg} moderator={true} key={uuid()} />;
                     })}
                 </Box>
             </Box>

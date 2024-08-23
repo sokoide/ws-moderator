@@ -109,7 +109,7 @@ const Chat = () => {
                     }}
                 >
                     {messages.map(function (msg, i) {
-                        return <MessageBox msg={msg} key={uuid()} />;
+                        return <MessageBox msg={msg} moderator={false} key={uuid()} />;
                     })}
                 </Box>
 

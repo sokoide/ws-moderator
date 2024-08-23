@@ -31,7 +31,7 @@ func init() {
 	}
 }
 
-func storeRequest(clientID string, userEmail string, messageText string, messageKind string) {
+func storeRequest(clientID string, userEmail string, messageText string, messageKind string, approved bool, moderated bool) {
 	ctx := context.TODO()
 
 	document := map[string]interface{}{
@@ -39,8 +39,8 @@ func storeRequest(clientID string, userEmail string, messageText string, message
 		"userEmail":   userEmail,
 		"messageText": messageText,
 		"messageType": messageKind,
-		"moderated":   false,
-		"approved":    false,
+		"approved":    approved,
+		"moderated":   moderated,
 	}
 
 	collection := client.Database(MONGODB_NAME).Collection(MONGODB_COLLECTION)
@@ -67,6 +67,8 @@ func storeRequest(clientID string, userEmail string, messageText string, message
 			Kind: messageKind,
 			Data: messageText,
 		},
+		Approved:  approved,
+		Moderated: moderated,
 	}
 
 	db.notifyObservers(request)

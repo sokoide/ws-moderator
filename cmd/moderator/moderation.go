@@ -21,20 +21,20 @@ type ModRequest struct {
 	Moderated bool    `json:"moderated"`
 }
 
-func newModRequest(id string, clientID string, userEmail string, kind string, text string) *ModRequest {
+func newModRequest(id string, clientID string, userEmail string, kind string, text string, approved bool, moderated bool) *ModRequest {
 	return &ModRequest{
 		ID:        id,
 		ClientID:  clientID,
 		User:      "system",
 		UserEmail: userEmail,
 		Message:   Message{Kind: kind, Data: text},
-		Approved:  false,
-		Moderated: false,
+		Approved:  approved,
+		Moderated: moderated,
 	}
 }
 
-func makeModRequestJsonBytes(id string, clientID string, userEmail string, kind string, text string) []byte {
-	m := newModRequest(id, clientID, userEmail, kind, text)
+func makeModRequestJsonBytes(id string, clientID string, userEmail string, kind string, text string, approved bool, moderated bool) []byte {
+	m := newModRequest(id, clientID, userEmail, kind, text, approved, moderated)
 	mj, err := json.Marshal(m)
 
 	if err != nil {

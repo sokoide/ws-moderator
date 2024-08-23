@@ -62,7 +62,7 @@ func startModerator() {
 		defer ws.Close()
 
 		moderatorID := uuid.NewString()
-		msg := makeModRequestJsonBytes("", moderatorID, "system@system", "txt", fmt.Sprintf("moderatorID: %s", moderatorID))
+		msg := makeModRequestJsonBytes("", moderatorID, "system@system", "txt", fmt.Sprintf("moderatorID: %s", moderatorID), true, true)
 		err = ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Error(err)
@@ -123,7 +123,7 @@ func startModerator() {
 				select {
 				case <-ticker.C:
 					log.Debug("tick")
-					msg := makeModRequestJsonBytes("", moderatorID, "system@system", "ping", "ping")
+					msg := makeModRequestJsonBytes("", moderatorID, "system@system", "ping", "ping", true, true)
 					err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
 					if err != nil {
 						// if disconnected, it comes here
@@ -146,7 +146,7 @@ func startModerator() {
 		defer ws.Close()
 
 		clientID := uuid.NewString()
-		msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", fmt.Sprintf("clientID: %s", clientID))
+		msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", fmt.Sprintf("clientID: %s", clientID), true, true)
 		err = ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Error(err)
@@ -178,10 +178,10 @@ func startModerator() {
 				continue
 			}
 			// save it
-			storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind)
+			storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, false, false)
 
 			// send a message to client.
-			msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Moderating...")
+			msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Moderating...", true, true)
 			err = ws.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
 				// if disconnected, it comes here
@@ -196,7 +196,8 @@ func startModerator() {
 				// TODO: text generation
 				// time.Sleep(time.Second)
 
-				storeRequest(clientID, req.UserEmail, "Dummy response from Claude3...", "txt")
+				// storeRequest(clientID, req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
+				storeRequest(clientID, req.UserEmail, "Dummy response from Claude3...", "txt", true, true)
 				// msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Dummy answer from Claude3...")
 				// err = ws.WriteMessage(websocket.TextMessage, msg)
 				// if err != nil {

@@ -9,6 +9,7 @@ import UserIcon from "@mui/icons-material/Person";
 
 interface MessageProps {
     msg: ModRequest;
+    moderator: boolean;
 }
 
 const MessageBox: React.FC<MessageProps> = ({ msg }) => {
