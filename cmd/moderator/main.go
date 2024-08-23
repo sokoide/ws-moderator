@@ -62,7 +62,7 @@ func startModerator() {
 		defer ws.Close()
 
 		moderatorID := uuid.NewString()
-		msg := makeModRequestJsonBytes("", "bot", "system@system", "txt", fmt.Sprintf("moderatorID: %s", moderatorID), true, true)
+		msg := makeModRequestJsonBytes("", "bot", "system@system", "txt", fmt.Sprintf("moderatorID: %s", moderatorID), true, false)
 		err = ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Error(err)
@@ -146,7 +146,7 @@ func startModerator() {
 		defer ws.Close()
 
 		clientID := uuid.NewString()
-		msg := makeModRequestJsonBytes("", "bot", "system@system", "txt", fmt.Sprintf("clientID: %s", clientID), true, true)
+		msg := makeModRequestJsonBytes("", "bot", "system@system", "txt", fmt.Sprintf("clientID: %s", clientID), true, false)
 		err = ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Error(err)
@@ -178,10 +178,10 @@ func startModerator() {
 				continue
 			}
 			// save it
-			storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, false, false)
+			storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, false, true)
 
 			// send a message to client.
-			msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Moderating...", true, true)
+			msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Moderating & generating...", true, false)
 			err = ws.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
 				// if disconnected, it comes here
@@ -197,7 +197,7 @@ func startModerator() {
 				// time.Sleep(time.Second)
 
 				// storeRequest(clientID, req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
-				storeRequest("bot", req.UserEmail, "Dummy response from Claude3...", "txt", true, true)
+				storeRequest("bot", req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
 				// msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Dummy answer from Claude3...")
 				// err = ws.WriteMessage(websocket.TextMessage, msg)
 				// if err != nil {

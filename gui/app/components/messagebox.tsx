@@ -9,10 +9,9 @@ import UserIcon from "@mui/icons-material/Person";
 
 interface MessageProps {
     msg: ModRequest;
-    moderator: boolean;
 }
 
-const MessageBox: React.FC<MessageProps> = ({ msg, moderator }) => {
+const MessageBox: React.FC<MessageProps> = ({ msg }) => {
     console.info("message: %O", msg);
 
     return (
@@ -30,7 +29,7 @@ const MessageBox: React.FC<MessageProps> = ({ msg, moderator }) => {
                 }}
             >
                 {msg.client_id !== "bot" ? <UserIcon /> : <RobotIcon />}
-                {moderator ? <p>{msg.message.data}</p> : <p>{msg.message.data}</p>}
+                <p>{msg.message.data}</p>
             </Box>
             <br />
         </>

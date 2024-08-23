@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useState, useRef } from "react";
 import { AppContext } from "@/context/app-context";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import MessageBox from "./messagebox";
+import ModeratorMessageBox from "./moderator_messagebox";
 import { Message, ModRequest } from "./types";
 import { green } from "@mui/material/colors";
 import { v4 as uuid } from "uuid";
@@ -104,7 +104,7 @@ const Moderator = () => {
                     }}
                 >
                     {messages.map(function (msg, i) {
-                        return <MessageBox msg={msg} moderator={true} key={uuid()} />;
+                        return <ModeratorMessageBox msg={msg} key={uuid()} />;
                     })}
                 </Box>
             </Box>
