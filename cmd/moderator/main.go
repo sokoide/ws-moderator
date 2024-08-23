@@ -62,7 +62,7 @@ func startModerator() {
 		defer ws.Close()
 
 		moderatorID := uuid.NewString()
-		msg := makeModRequestJsonBytes("", "bot", "system@system", "txt", fmt.Sprintf("moderatorID: %s", moderatorID), true, false)
+		msg := makeModRequestJsonBytes("", "bot", "", "txt", fmt.Sprintf("moderatorID: %s", moderatorID), true, false)
 		err = ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Error(err)
@@ -123,7 +123,7 @@ func startModerator() {
 				select {
 				case <-ticker.C:
 					log.Debug("tick")
-					msg := makeModRequestJsonBytes("", moderatorID, "system@system", "ping", "ping", true, true)
+					msg := makeModRequestJsonBytes("", "bot", "", "ping", "ping", true, true)
 					err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
 					if err != nil {
 						// if disconnected, it comes here
@@ -146,7 +146,7 @@ func startModerator() {
 		defer ws.Close()
 
 		clientID := uuid.NewString()
-		msg := makeModRequestJsonBytes("", "bot", "system@system", "txt", fmt.Sprintf("clientID: %s", clientID), true, false)
+		msg := makeModRequestJsonBytes("", "bot", "", "txt", fmt.Sprintf("clientID: %s", clientID), true, false)
 		err = ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Error(err)
@@ -181,7 +181,7 @@ func startModerator() {
 			storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, false, true)
 
 			// send a message to client.
-			msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Moderating & generating...", true, false)
+			msg := makeModRequestJsonBytes("", "bot", "", "txt", "Moderating & generating...", true, false)
 			err = ws.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
 				// if disconnected, it comes here
@@ -198,7 +198,6 @@ func startModerator() {
 
 				// storeRequest(clientID, req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
 				storeRequest("bot", req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
-				// msg := makeModRequestJsonBytes("", clientID, "system@system", "txt", "Dummy answer from Claude3...")
 				// err = ws.WriteMessage(websocket.TextMessage, msg)
 				// if err != nil {
 				// 	// if disconnected, it comes here

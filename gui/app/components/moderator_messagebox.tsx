@@ -5,6 +5,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Message, ModRequest } from "./types";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
 import RobotIcon from "@mui/icons-material/SmartToy";
 import UserIcon from "@mui/icons-material/Person";
 
@@ -12,12 +13,24 @@ interface MessageProps {
     msg: ModRequest;
 }
 
-const ModerateButtons = () => {
+interface ModerateButtonsProps {
+    msgid: string;
+}
+
+const ModerateButtons: React.FC<MessageProps> = ({ msg }) => {
     return (
         <>
-            <br />
-            <Button>Approve</Button>
-            <Button>Deny</Button>
+            <Box flexDirection={"column"}>
+                <Divider/>
+                <Box>
+                    <p>email: {msg.user_email}</p>
+                    <p>msgid: {msg.id}</p>
+                </Box>
+                <Box flexDirection={"row"}>
+                    <Button>Approve</Button>
+                    <Button>Deny</Button>
+                </Box>
+            </Box>
         </>
     );
 };
@@ -43,8 +56,16 @@ const ModeratorMessageBox: React.FC<MessageProps> = ({ msg }) => {
                     }}
                 >
                     {msg.client_id !== "bot" ? <UserIcon /> : <RobotIcon />}
-                    <p>{msg.message.data}</p>
-                    {msg.moderated || msg.approved ? "" : <ModerateButtons />}
+                    <Box flexDirection={"column"}>
+                        <Box>
+                            <p>{msg.message.data}</p>
+                        </Box>
+                        {msg.moderated || msg.approved ? (
+                            ""
+                        ) : (
+                            <ModerateButtons msg={msg} />
+                        )}
+                    </Box>
                 </Box>
                 <br />
             </>
