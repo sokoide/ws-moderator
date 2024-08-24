@@ -8,7 +8,7 @@ import Button from "@mui/material/Button";
 const Login = () => {
     const context = useContext(AppContext);
     if (context === null) {
-        console.error("context not available")
+        console.error("context not available");
         return;
     }
 
@@ -34,7 +34,7 @@ const Login = () => {
         if (employee === "") return;
         if (email === "") return;
         login(username, employee, email);
-        window.location.href = "/";
+        if (typeof window !== "undefined") window.location.href = "/";
     };
 
     const handleLogout = () => {
@@ -56,8 +56,12 @@ const Login = () => {
                     </>
                 ) : (
                     <>
-                        <p>Note: The <b>Employee Personal Email</b>(case sensitive) will be used as the chat conversation key.</p>
-                        <hr/>
+                        <p>
+                            Note: The <b>Employee Personal Email</b>(case
+                            sensitive) will be used as the chat conversation
+                            key.
+                        </p>
+                        <hr />
                         <div className="input">
                             Author Name:
                             <input

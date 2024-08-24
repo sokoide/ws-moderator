@@ -1,7 +1,5 @@
 "use client";
-import { createContext, useEffect, useState } from "react";
-
-//export const AppContext = createContext(null);
+import { createContext, useEffect, useState, ReactNode} from "react";
 
 interface AppContextType {
     loginInfo?: {
@@ -15,34 +13,42 @@ interface AppContextType {
 }
 export const AppContext = createContext<AppContextType | null>(null);
 
+interface AppContextProviderProps {
+    children: ReactNode;
+}
+
 // functions
 const getLoginInfo = () => {
-    let loginInfo = {};
+    let loginInfo = {
+        loggedIn: false,
+        username: "",
+        employee: "",
+        email: "",
+    };
 
-    if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("loginInfo") || {
-            loggedIn: false,
-            username: "",
-            employee: "",
-            email: "",
-        };
-        try {
-            let ret = JSON.parse(stored);
-            return ret;
-        } catch (e) {
-            return loginInfo;
-        }
-    }
-    console.log(
-        "getLoginInfo: window NOT available, using the empty login info"
-    );
+    // if (typeof window !== "undefined") {
+    //     const stored = localStorage.getItem("loginInfo");
+    //     if (stored == null) return loginInfo;
+
+    //     try {
+    //         let ret = JSON.parse(stored);
+    //         return ret;
+    //     } catch (e) {
+    //         return loginInfo;
+    //     }
+    // }
+    // console.log(
+    //     "getLoginInfo: window NOT available, using the empty login info"
+    // );
     return loginInfo;
 };
 
 // ContextProvider
-export const AppContextProvider = (props) => {
+export const AppContextProvider: React.FC<AppContextProviderProps> = ({ children }) => {
     // ----- states -----
+    // const [loginInfo, setLoginInfo] = useState(getLoginInfo());
     const [loginInfo, setLoginInfo] = useState(getLoginInfo());
+
     // save loginInfo in localStorage whenever it changes
     useEffect(() => {
         console.log("saving loginInfo %O in localStorage", loginInfo);
@@ -53,7 +59,7 @@ export const AppContextProvider = (props) => {
     const login = (username: string, employee: string, email: string) => {
         console.log("login(%O, %O, %O)", username, employee, email);
 
-        setLoginInfo((prev) => ({
+        setLoginInfo((prev: AppContextType["loginInfo"] | undefined) => ({
             ...prev,
             loggedIn: true,
             username: username,
@@ -64,7 +70,7 @@ export const AppContextProvider = (props) => {
 
     const logout = () => {
         console.log("logout");
-        setLoginInfo((prev) => ({
+        setLoginInfo((prev: AppContextType["loginInfo"] | undefined) => ({
             ...prev,
             loggedIn: false,
             username: "",
@@ -81,7 +87,7 @@ export const AppContextProvider = (props) => {
     };
     return (
         <AppContext.Provider value={contextValue}>
-            {props.children}
+            {children}
         </AppContext.Provider>
     );
 };

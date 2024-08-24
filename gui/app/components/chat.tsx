@@ -31,7 +31,7 @@ const Chat = () => {
     const taRef = useRef(null);
 
     if (loginInfo != null && loginInfo.loggedIn === false) {
-        window.location.href = "/login";
+        if (typeof window !== "undefined") window.location.href = "/login";
     }
 
     useEffect(() => {
