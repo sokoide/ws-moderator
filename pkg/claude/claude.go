@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync/atomic"
 )
 
+// types
 type Request struct {
 	Prompt string
 }
@@ -37,6 +39,14 @@ type ClaudeResponse struct {
 type ClaudeContent struct {
 	Text string `json:"text"`
 	Type string `json:"type"`
+}
+
+// globals
+var claudeConns int32
+
+// functions
+func GetConns() int32 {
+	return atomic.LoadInt32(&claudeConns)
 }
 
 func callClaudeAPI(apiKey string, model string, history *[]ClaudeMessage) (string, error) {
@@ -100,6 +110,8 @@ func StartConversation(id string, cin chan Request, cout chan Response) {
 	model := "claude-3-5-sonnet-20240620"
 	// TODO: store history in mongodb
 	var history []ClaudeMessage
+	atomic.AddInt32(&claudeConns, 1)
+	defer atomic.AddInt32(&claudeConns, -1)
 
 	for {
 		req, ok := <-cin

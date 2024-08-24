@@ -34,8 +34,6 @@ var o options = options{
 
 var db Database = Database{}
 
-var claudeConns int32
-
 var claudes sync.Map
 
 // functions

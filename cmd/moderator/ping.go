@@ -1,11 +1,11 @@
 package main
 
 import (
-	"sync/atomic"
 	"time"
 
 	"github.com/minio/websocket"
 	log "github.com/sirupsen/logrus"
+	"github.com/sokoide/ws-ai/pkg/claude"
 )
 
 func pingModerator(ws *websocket.Conn, moderatorID string) {
@@ -17,7 +17,7 @@ func pingModerator(ws *websocket.Conn, moderatorID string) {
 		for {
 			select {
 			case <-ticker.C:
-				log.Infof("tick: %d", atomic.LoadInt32(&claudeConns))
+				log.Infof("tick: current claude conns: %d", claude.GetConns())
 				msg := makeModRequestJsonBytes("", "bot", "", "ping", "ping", true, true)
 				err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
 				if err != nil {
