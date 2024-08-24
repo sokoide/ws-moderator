@@ -69,6 +69,7 @@ const Moderator = () => {
 
     const onSend = () => {
         console.log("onSend: %O", inputValue);
+        // TODO: make it a function
         if (socket && socket.readyState === WebSocket.OPEN) {
             let msg: ModRequest = {
                 id: "",
@@ -95,24 +96,42 @@ const Moderator = () => {
 
     const handleApprove = (msgid) => {
         console.log("handleApprove: %O", msgid);
-        // TODO: send message
-        // let msg: ModRequest = {
-        //     id: msgid,
-        //     client_id: "",
-        //     user_email: loginInfo.email,
-        //     message: {
-        //         kind: "system",
-        //         data: "approve",
-        //     },
-        //     approved: false,
-        //     moderated: false,
-        // };
-        // socket.send(JSON.stringify(msg));
+        // send message
+        // TODO: make it a function
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            let msg: ModRequest = {
+                id: msgid,
+                client_id: "",
+                user_email: loginInfo.email,
+                message: {
+                    kind: "system",
+                    data: "approve",
+                },
+                approved: false,
+                moderated: false,
+            };
+            socket.send(JSON.stringify(msg));
+        }
     };
 
     const handleDeny = (msgid) => {
         console.log("handleDeny: %O", msgid);
         // TODO: send message
+        // TODO: make it a function
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            let msg: ModRequest = {
+                id: msgid,
+                client_id: "",
+                user_email: loginInfo.email,
+                message: {
+                    kind: "system",
+                    data: "deny",
+                },
+                approved: false,
+                moderated: false,
+            };
+            socket.send(JSON.stringify(msg));
+        }
     };
 
     return (

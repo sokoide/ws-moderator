@@ -75,92 +75,68 @@ func startModerator() {
 		db.register(monitor)
 		defer db.unregister(monitor)
 
-		_, message, err := ws.ReadMessage()
-		if err != nil {
-			// if disconnected, it comes here
-			log.Warnf("[%s] ReadMessage failed, %v", moderatorID, err)
-			return
-		}
-		log.Infof("[%s] Received Message: %s", moderatorID, string(message))
-
-		// convert message into ModRequest
-		var req ModRequest
-		err = json.Unmarshal(message, &req)
-		if err != nil {
-			log.Errorf("[%s] failed to parse %s", moderatorID, string(message))
-			return
-		}
-
-		if req.Message.Kind == "system" && req.Message.Data == "" {
-			// return all non-moderated documents
-			reqs := loadRequests(false)
-			for _, req := range reqs {
-				msg := makeModRequestJsonBytes(req.ID, req.ClientID, req.UserEmail, req.Message.Kind, req.Message.Data, req.Approved, req.Moderated)
-				log.Debugf("sending %+v", req)
-				err = ws.WriteMessage(websocket.TextMessage, msg)
-				if err != nil {
-					// if disconnected, it comes here
-					log.Warnf("[%s] WriteMessage failed, %v", moderatorID, err)
-					return
-				}
-			}
-		}
+		log.Infof("[%s] New Connection Established", moderatorID)
 
 		// ping
 		go pingModerator(ws, moderatorID)
 
-		// for {
-		// 	_, message, err := ws.ReadMessage()
-		// 	if err != nil {
-		// 		// if disconnected, it comes here
-		// 		log.Warnf("[%s] ReadMessage failed, %v", clientID, err)
-		// 		break
-		// 	}
-		// 	log.Infof("[%s] Received Message: %s", clientID, string(message))
+		// receive loop
+		for {
+			_, message, err := ws.ReadMessage()
+			if err != nil {
+				// if disconnected, it comes here
+				log.Warnf("[%s] ReadMessage failed, %v", moderatorID, err)
+				break
+			}
+			log.Infof("[%s] Received Message: %s", moderatorID, string(message))
 
-		// 	// convert message into ModRequest
-		// 	var req ModRequest
-		// 	err = json.Unmarshal(message, &req)
-		// 	if err != nil {
-		// 		log.Errorf("[%s] failed to parse %s", clientID, string(message))
-		// 		continue
-		// 	}
-		// 	if req.Message.Kind == "system" && req.Message.Data == "" {
-		// 		// return all approved documents for the user
-		// 		reqs := loadRequestsForUserEmail(req.UserEmail)
-		// 		for _, req := range reqs {
-		// 			msg := makeModRequestJsonBytes(req.ID, req.ClientID, req.UserEmail, req.Message.Kind, req.Message.Data, req.Approved, req.Moderated)
-		// 			log.Debugf("sending %+v", req)
-		// 			err = ws.WriteMessage(websocket.TextMessage, msg)
-		// 			if err != nil {
-		// 				// if disconnected, it comes here
-		// 				log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
-		// 				break
-		// 			}
-		// 		}
-		// 		continue
-		// 	}
+			// convert message into ModRequest
+			var req ModRequest
+			err = json.Unmarshal(message, &req)
+			if err != nil {
+				log.Errorf("[%s] failed to parse %s", moderatorID, string(message))
+				continue
+			}
+			if req.Message.Kind == "system" {
+				switch req.Message.Data {
+				case "":
+					// return all non-moderated documents
+					reqs := loadRequests(false)
+					for _, req := range reqs {
+						msg := makeModRequestJsonBytes(req.ID, req.ClientID, req.UserEmail, req.Message.Kind, req.Message.Data, req.Approved, req.Moderated)
+						log.Debugf("sending %+v", req)
+						err = ws.WriteMessage(websocket.TextMessage, msg)
+						if err != nil {
+							// if disconnected, it comes here
+							log.Warnf("[%s] WriteMessage failed, %v", moderatorID, err)
+							break
+						}
+					}
+					continue
+				case "approve":
+					log.Infof("approved %v", req.ID)
+					continue
+				case "deny":
+					log.Infof("denied %v", req.ID)
+					continue
+				default:
+					log.Warnf("[%s] unknown Message.Data %s. Continuing...", moderatorID, req.Message.Data)
+					continue
+				}
+			}
 
-		// 	// save it
-		// 	storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, true, true)
+			// save it
+			// storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, true, true)
 
-		// 	// send a message to client.
-		// 	msg := makeModRequestJsonBytes("", "bot", "", "txt", "Moderating & generating...", true, false)
-		// 	err = ws.WriteMessage(websocket.TextMessage, msg)
-		// 	if err != nil {
-		// 		// if disconnected, it comes here
-		// 		log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
-		// 		break
-		// 	}
-
-		// 	// call AI
-		// 	if strings.HasPrefix(req.Message.Data, "/imagine") {
-		// 		// TODO: image generation
-		// 	} else {
-		// 		// TODO: text generation
-		// 		storeRequest("bot", req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
-		// 	}
-		// }
+			// send a message to client.
+			// msg := makeModRequestJsonBytes("", "bot", "", "txt", "Moderating & generating...", true, false)
+			// err = ws.WriteMessage(websocket.TextMessage, msg)
+			// if err != nil {
+			// 	// if disconnected, it comes here
+			// 	log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
+			// 	break
+			// }
+		}
 
 	})
 
@@ -189,6 +165,7 @@ func startModerator() {
 
 		log.Infof("[%s] New Connection Established", clientID)
 
+		// receive loop
 		for {
 			_, message, err := ws.ReadMessage()
 			if err != nil {
