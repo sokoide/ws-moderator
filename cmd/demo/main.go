@@ -16,13 +16,15 @@ func main() {
 
 	go claude.StartConversation("foo@example.com", cin, cout)
 
-	cin <- claude.Request{Prompt: "What's the biggest city in Japan?"}
-	res := <-cout
+	for _, q := range []string{"What's the biggest city in Japan?", "Area"} {
+		cin <- claude.Request{Prompt: q}
+		res := <-cout
 
-	if res.Succeeded {
-		log.Infof("ans: %s\n", res.Text)
-	} else {
-		log.Infof("error: %s\n", res.Text)
+		if res.Succeeded {
+			log.Infof("ans: %s\n", res.Text)
+		} else {
+			log.Infof("error: %s\n", res.Text)
+		}
 	}
 
 	close(cin)

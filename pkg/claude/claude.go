@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -39,13 +39,13 @@ type ClaudeContent struct {
 	Type string `json:"type"`
 }
 
-func callClaudeAPI(apiKey string, model string, history []ClaudeMessage) (string, error) {
+func callClaudeAPI(apiKey string, model string, history *[]ClaudeMessage) (string, error) {
 	url := "https://api.anthropic.com/v1/messages"
 
 	requestBody, err := json.Marshal(ClaudeRequest{
 		Model:     model,
 		MaxTokens: 1024,
-		Messages:  history,
+		Messages:  *history,
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request: %v", err)
@@ -67,7 +67,7 @@ func callClaudeAPI(apiKey string, model string, history []ClaudeMessage) (string
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %v", err)
 	}
@@ -84,7 +84,7 @@ func callClaudeAPI(apiKey string, model string, history []ClaudeMessage) (string
 
 	if len(claudeResp.Content) > 0 {
 		// Update conversation history with the new assistant message
-		history = append(history, ClaudeMessage{
+		*history = append(*history, ClaudeMessage{
 			Role:    "assistant",
 			Content: claudeResp.Content[0].Text,
 		})
@@ -116,7 +116,7 @@ func StartConversation(id string, cin chan Request, cout chan Response) {
 			Content: userInput,
 		})
 
-		response, err := callClaudeAPI(apiKey, model, history)
+		response, err := callClaudeAPI(apiKey, model, &history)
 		if err != nil {
 			fmt.Printf("ID:%s error calling Claude API: %v\n", id, err)
 			cout <- Response{Succeeded: false, Text: ""}
