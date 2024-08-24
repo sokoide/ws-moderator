@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Message struct {
@@ -19,6 +20,16 @@ type ModRequest struct {
 	Message   Message `json:"message"`
 	Approved  bool    `json:"approved"`
 	Moderated bool    `json:"moderated"`
+}
+
+type MongoRequest struct {
+	ID          primitive.ObjectID `bson:"_id"`
+	ClientID    string             `bson:"client_id"`
+	UserEmail   string             `bson:"user_email"`
+	MessageData string             `bson:"message_data"`
+	MessageKind string             `bson:"message_kind"`
+	Approved    bool               `bson:"approved"`
+	Moderated   bool               `bson:"moderated"`
 }
 
 func newModRequest(id string, clientID string, userEmail string, kind string, text string, approved bool, moderated bool) *ModRequest {

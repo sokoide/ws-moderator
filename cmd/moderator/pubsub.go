@@ -69,7 +69,8 @@ type Observer interface {
 
 type DatabaseMonitor struct {
 	Observer
-	ID string
+	ID   string
+	Conn *websocket.Conn
 }
 
 type NewRequestMonitor struct {
@@ -78,20 +79,26 @@ type NewRequestMonitor struct {
 	Conn *websocket.Conn
 }
 
+// notify User
 func (o *DatabaseMonitor) updated(request *ModRequest) {
-	if request.UserEmail == "system@system" {
+	if request.Moderated == true {
 		log.Infof("[%s] message %s updated, clientID: %s", o.ID, request.Message.Data, request.ClientID)
+		data, err := json.Marshal(request)
+		if err != nil {
+			// if disconnected, it comes here
+			log.Warnf("[%s] json.Marshal failed in updated, %v", o.ID, err)
+			return
+		}
 
-		// 		log.Infof("[%s] Mod Sending: %s", moderatorID, msg)
-		// 		err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
-		// 		if err != nil {
-		// 			// if disconnected, it comes here
-		// 			log.Warnf("[%s] Mod WriteMessage failed, %v", moderatorID, err)
-		// 			break
-		// 		}
+		err = o.Conn.WriteMessage(websocket.TextMessage, []byte(data))
+		if err != nil {
+			// if disconnected, it comes here
+			log.Warnf("[%s] Mod WriteMessage failed, %v", o.ID, err)
+		}
 	}
 }
 
+// notify Moderator
 func (o *NewRequestMonitor) updated(request *ModRequest) {
 	if request.UserEmail != "system@system" {
 		log.Infof("[%s] new request %s", o.ID, request.Message.Data)

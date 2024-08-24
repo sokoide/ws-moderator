@@ -69,7 +69,9 @@ const Chat = () => {
         console.log("onSend: %O", inputValue);
         let msg = ClientUtil.sendMessage(socket, "", "", loginInfo.email, "txt", inputValue, false, false);
         if (msg != null) {
-            setMessages((prevMessages) => [...prevMessages, msg]);
+            // Note: don't add the messge here.
+            // the requested message will be sent back from the server
+            // setMessages((prevMessages) => [...prevMessages, msg]);
             setInputValue("");
         } else {
             console.error("WebSocket is not open");

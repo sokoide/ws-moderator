@@ -115,27 +115,18 @@ func startModerator() {
 					continue
 				case "approve":
 					log.Infof("approved %v", req.ID)
+					updateRequest(req.ID, true, true)
 					continue
 				case "deny":
+					updateRequest(req.ID, false, true)
 					log.Infof("denied %v", req.ID)
+					// TODO: send message to client
 					continue
 				default:
 					log.Warnf("[%s] unknown Message.Data %s. Continuing...", moderatorID, req.Message.Data)
 					continue
 				}
 			}
-
-			// save it
-			// storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, true, true)
-
-			// send a message to client.
-			// msg := makeModRequestJsonBytes("", "bot", "", "txt", "Moderating & generating...", true, false)
-			// err = ws.WriteMessage(websocket.TextMessage, msg)
-			// if err != nil {
-			// 	// if disconnected, it comes here
-			// 	log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
-			// 	break
-			// }
 		}
 
 	})
@@ -158,7 +149,8 @@ func startModerator() {
 		}
 
 		monitor := &DatabaseMonitor{
-			ID: clientID,
+			ID:   clientID,
+			Conn: ws,
 		}
 		db.register(monitor)
 		defer db.unregister(monitor)
@@ -215,7 +207,9 @@ func startModerator() {
 				// TODO: image generation
 			} else {
 				// TODO: text generation
-				storeRequest("bot", req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
+				storeRequest("bot", req.UserEmail,
+					fmt.Sprintf("%s dummy response from Claude3...", req.Message.Data),
+					"txt", false, false)
 			}
 		}
 	})
