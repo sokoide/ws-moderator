@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sync/atomic"
 	"time"
 
 	"github.com/minio/websocket"
@@ -16,7 +17,7 @@ func pingModerator(ws *websocket.Conn, moderatorID string) {
 		for {
 			select {
 			case <-ticker.C:
-				log.Debug("tick")
+				log.Infof("tick: %d", atomic.LoadInt32(&claudeConns))
 				msg := makeModRequestJsonBytes("", "bot", "", "ping", "ping", true, true)
 				err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
 				if err != nil {

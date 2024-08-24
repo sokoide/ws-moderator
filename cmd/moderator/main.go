@@ -6,25 +6,37 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/minio/websocket"
 	log "github.com/sirupsen/logrus"
+	"github.com/sokoide/ws-ai/pkg/claude"
 )
 
-// globals
+// types
 type options struct {
 	port     int
 	logLevel string
 	level    log.Level
 }
+type ClaudeComm struct {
+	user string
+	cin  chan claude.Request
+	cout chan claude.Response
+}
 
+// globals
 var o options = options{
 	port:     80,
 	logLevel: "INFO",
 }
 
 var db Database = Database{}
+
+var claudeConns int32
+
+var claudes sync.Map
 
 // functions
 func parseArgs() {
@@ -221,9 +233,38 @@ func startModerator() {
 				// TODO: image generation
 			} else {
 				// TODO: text generation
-				storeRequest("bot", req.UserEmail,
-					"Dummy response from Claude3...",
-					"txt", false, false)
+				// storeRequest("bot", req.UserEmail,
+				// 	"Dummy response from Claude3...",
+				// 	"txt", false, false)
+
+				var c *ClaudeComm
+
+				if value, ok := claudes.Load(req.UserEmail); ok {
+					c = value.(*ClaudeComm)
+				} else {
+					log.Infof("%s not available, making...", req.UserEmail)
+					c = &ClaudeComm{
+						user: req.UserEmail,
+						cin:  make(chan claude.Request, 1),
+						cout: make(chan claude.Response, 1),
+					}
+					claudes.Store(req.UserEmail, c)
+					go claude.StartConversation(c.user, c.cin, c.cout)
+					defer close(c.cin)
+				}
+				c.cin <- claude.Request{Prompt: req.Message.Data}
+				res, ok := <-c.cout
+				if ok && res.Succeeded {
+					storeRequest("bot", req.UserEmail,
+						res.Text,
+						"txt", false, false)
+				} else {
+					log.Errorf("[%s] failed o receive from AI %v", clientID, res)
+					storeRequest("bot", req.UserEmail,
+						"Failed to get an answer from AI. Please retry.",
+						"txt", true, true)
+					break
+				}
 			}
 		}
 	})

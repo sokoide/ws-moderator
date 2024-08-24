@@ -74,6 +74,7 @@ func main() {
 			}
 			claudes.Store(user, c)
 			go claude.StartConversation(c.user, c.cin, c.cout)
+			defer close(c.cin)
 		}
 	}
 
