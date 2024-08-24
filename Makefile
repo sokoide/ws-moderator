@@ -1,14 +1,15 @@
-.PHONY: build run moderator gui
+.PHONY: run moderator gui
 
-build: gui moderator
-
-run: build
+run: moderator
+	@echo "*****"
+	@echo "run 'make gui' first if you haven't done yet"
+	@echo "*****"
 	./moderator
 
-moderator: gui
+moderator:
 	@echo building moderator...
 	go build ./cmd/moderator
 
 gui:
 	@echo bulding gui...
-	cd gui; npm run build
+	cd gui && npm run build

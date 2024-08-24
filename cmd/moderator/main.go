@@ -1,12 +1,11 @@
 package main
 
 import (
-	"embed"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/fs"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -27,9 +26,6 @@ type ClaudeComm struct {
 	cin  chan claude.Request
 	cout chan claude.Response
 }
-
-//go:embed out/*
-var content embed.FS
 
 // globals
 var o options = options{
@@ -64,12 +60,9 @@ func startModerator() {
 			// return r.Header.Get("Origin") == "http://allowed-origin.com"
 		}}
 
-	// "/" for react
-	// Create a file system from the embedded content
-	contentFS, _ := fs.Sub(content, "out")
-
-	// Create a file server to serve the embedded static files
-	fs := http.FileServer(http.FS(contentFS))
+	// "/react" for react
+	staticDir := filepath.Join("gui", "out")
+	fs := http.FileServer(http.Dir(staticDir))
 	http.Handle("/", fs)
 
 	// moderator websocket
