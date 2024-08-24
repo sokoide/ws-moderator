@@ -3,7 +3,7 @@
 import { ModRequest } from "./types";
 
 export const sendMessage = (
-    ws: WebSocket,
+    ws: WebSocket | null,
     id: string,
     client_id: string,
     user_email: string,

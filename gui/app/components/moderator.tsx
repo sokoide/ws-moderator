@@ -1,7 +1,13 @@
 "use client";
 
 import "./moderator.css";
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, {
+    useContext,
+    useEffect,
+    useState,
+    useRef,
+    ChangeEvent,
+} from "react";
 import { AppContext } from "@/context/app-context";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,18 +18,23 @@ import { green } from "@mui/material/colors";
 import { v4 as uuid } from "uuid";
 
 const Moderator = () => {
+    const context = useContext(AppContext);
+    if (context === null) {
+        console.error("context not available");
+        return;
+    }
+    const { loginInfo } = context;
+
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [inputValue, setInputValue] = useState("");
     const [messages, setMessages] = useState<ModRequest[]>([]);
     const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
-    const { loginInfo, login, logout } = useContext(AppContext);
 
     useEffect(() => {
-        const wsUrl =
-            process.env.NEXT_PUBLIC_MODERATOR_WS ?? "undefined";
-        console.log("wsUrl: %O", wsUrl)
-        const ws = new WebSocket(wsUrl)
+        const wsUrl = process.env.NEXT_PUBLIC_MODERATOR_WS ?? "undefined";
+        console.log("wsUrl: %O", wsUrl);
+        const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
             console.log("useEffect: onopen");
@@ -67,13 +78,13 @@ const Moderator = () => {
         }
     }, [messages]);
 
-    const handleApprove = (msgid) => {
+    const handleApprove = (msgid: string) => {
         console.log("handleApprove: %O", msgid);
         ClientUtil.sendMessage(
             socket,
             msgid,
             "",
-            loginInfo.email,
+            loginInfo?.email ?? "",
             "system",
             "approve",
             false,
@@ -81,13 +92,13 @@ const Moderator = () => {
         );
     };
 
-    const handleDeny = (msgid) => {
+    const handleDeny = (msgid: string) => {
         console.log("handleDeny: %O", msgid);
         ClientUtil.sendMessage(
             socket,
             msgid,
             "",
-            loginInfo.email,
+            loginInfo?.email ?? "",
             "system",
             "deny",
             false,

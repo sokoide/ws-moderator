@@ -1,18 +1,13 @@
 "use client";
 
 import "./messagebox.css";
-import React, { useEffect, useState, useRef } from "react";
-import { Message, ModRequest } from "./types";
-import Moderator from "./moderator";
+import React, { ChangeEvent, MouseEvent } from "react";
+import { ModRequest } from "./types";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import RobotIcon from "@mui/icons-material/SmartToy";
 import UserIcon from "@mui/icons-material/Person";
-
-// interface MessageProps {
-//     msg: ModRequest;
-// }
 
 interface ModerateButtonsProps {
     msg: ModRequest;
@@ -21,14 +16,14 @@ interface ModerateButtonsProps {
 }
 
 const ModerateButtons: React.FC<ModerateButtonsProps> = ({ msg, onApprove, onDeny }) => {
-    const onChildApprove = (e) => {
-        console.log("onChildApproveButton: %O", e.target.value);
-        onApprove(e.target.value);
+    const onChildApprove = (e: MouseEvent<HTMLButtonElement>) => {
+        console.log("onChildApproveButton: %O", e.currentTarget.value);
+        onApprove(e.currentTarget.value);
     };
 
-    const onChildDeny = (e) => {
-        console.log("onChildDenyButton: %O", e.target.value);
-        onDeny(e.target.value);
+    const onChildDeny = (e: MouseEvent<HTMLButtonElement>) => {
+        console.log("onChildDenyButton: %O", e.currentTarget.value);
+        onDeny(e.currentTarget.value);
     };
 
     return (
@@ -56,12 +51,12 @@ const ModerateButtons: React.FC<ModerateButtonsProps> = ({ msg, onApprove, onDen
 const ModeratorMessageBox: React.FC<ModerateButtonsProps> = ({ msg, onApprove, onDeny }) => {
     // console.info("message: %O", msg);
 
-    const onChildApprove = (msgid) => {
+    const onChildApprove = (msgid: string) => {
         console.log("onChildApprove: %O", msgid);
         onApprove(msgid);
     };
 
-    const onChildDeny = (msgid) => {
+    const onChildDeny = (msgid: string) => {
         console.log("onChildDeny: %O", msgid);
         onDeny(msgid);
     };

@@ -1,34 +1,43 @@
 "use client";
 
 import "./chat.css";
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, {
+    useContext,
+    useEffect,
+    useState,
+    useRef,
+    ChangeEvent,
+} from "react";
 import { AppContext } from "@/context/app-context";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
 import MessageBox from "./messagebox";
-import { Message, ModRequest } from "./types";
+import { ModRequest } from "./types";
 import ClientUtil from "./client_util";
-import { blue } from "@mui/material/colors";
 import { v4 as uuid } from "uuid";
 
 const Chat = () => {
-    const { loginInfo, login, logout } = useContext(AppContext);
+    const context = useContext(AppContext);
+    if (context === null) {
+        console.error("context not available")
+        return;
+    }
+
+    const { loginInfo } = context;
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [inputValue, setInputValue] = useState("");
     const [messages, setMessages] = useState<ModRequest[]>([]);
     const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
 
-    if (loginInfo.loggedIn === false) {
+    if (loginInfo != null && loginInfo.loggedIn === false) {
         window.location.href = "/login";
     }
 
     useEffect(() => {
-        const wsUrl =
-            process.env.NEXT_PUBLIC_CHAT_WS ?? "undefined";
-        console.log("wsUrl: %O", wsUrl)
-        const ws = new WebSocket(wsUrl)
+        const wsUrl = process.env.NEXT_PUBLIC_CHAT_WS ?? "undefined";
+        console.log("wsUrl: %O", wsUrl);
+        const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
             console.log("useEffect: onopen");
@@ -36,7 +45,7 @@ const Chat = () => {
                 ws,
                 "",
                 "",
-                loginInfo.email,
+                loginInfo?.email ?? "",
                 "system",
                 "",
                 false,
@@ -47,7 +56,10 @@ const Chat = () => {
         ws.onmessage = (e) => {
             let msg = JSON.parse(e.data) as ModRequest;
             console.log("useEffect: onmessage: %O", msg);
-            if (msg.client_id === "bot" && msg.id === "" || msg.user_email === loginInfo.email) {
+            if (
+                (msg.client_id === "bot" && msg.id === "") ||
+                msg.user_email === (loginInfo?.email ?? "")
+            ) {
                 setMessages((prevMessages) => [...prevMessages, msg]);
             }
         };
@@ -81,7 +93,7 @@ const Chat = () => {
             socket,
             "",
             "",
-            loginInfo.email,
+            loginInfo?.email ?? "",
             "txt",
             inputValue,
             false,
@@ -97,7 +109,7 @@ const Chat = () => {
         }
     };
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
         setInputValue(e.target.value);
     };
 

@@ -1,18 +1,35 @@
 "use client";
 import { createContext, useEffect, useState } from "react";
 
-export const AppContext = createContext(null);
+//export const AppContext = createContext(null);
+
+interface AppContextType {
+    loginInfo?: {
+        loggedIn: boolean;
+        username: string;
+        employee: string;
+        email: string;
+    };
+    login: (username: string, employee: string, email: string) => void;
+    logout: () => void;
+}
+export const AppContext = createContext<AppContextType | null>(null);
 
 // functions
 const getLoginInfo = () => {
     let loginInfo = {};
 
     if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("loginInfo") || {loggedIn: false, username: "", employee: "", email: ""};
+        const stored = localStorage.getItem("loginInfo") || {
+            loggedIn: false,
+            username: "",
+            employee: "",
+            email: "",
+        };
         try {
             let ret = JSON.parse(stored);
             return ret;
-        } catch(e) {
+        } catch (e) {
             return loginInfo;
         }
     }

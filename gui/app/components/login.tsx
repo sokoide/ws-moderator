@@ -1,25 +1,31 @@
 "use client";
 
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, ChangeEvent } from "react";
 import "./login.css";
 import { AppContext } from "@/context/app-context";
 import Button from "@mui/material/Button";
 
 const Login = () => {
-    const { loginInfo, login, logout } = useContext(AppContext);
+    const context = useContext(AppContext);
+    if (context === null) {
+        console.error("context not available")
+        return;
+    }
+
+    const { loginInfo, login, logout } = context;
     const [username, setUsername] = useState("");
     const [employee, setEmployee] = useState("");
     const [email, setEmail] = useState("");
 
-    const handleUsername = (e) => {
+    const handleUsername = (e: ChangeEvent<HTMLInputElement>) => {
         setUsername(e.target.value);
     };
 
-    const handleEmployee = (e) => {
+    const handleEmployee = (e: ChangeEvent<HTMLInputElement>) => {
         setEmployee(e.target.value);
     };
 
-    const handleEmail = (e) => {
+    const handleEmail = (e: ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
     };
 
@@ -39,7 +45,7 @@ const Login = () => {
     return (
         <div className="wrapper">
             <div className="content">
-                {loginInfo.loggedIn ? (
+                {loginInfo?.loggedIn ? (
                     <>
                         <p>Author: {loginInfo.username}</p>
                         <p>Employee Name: {loginInfo.employee}</p>
