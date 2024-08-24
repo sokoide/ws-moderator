@@ -4,6 +4,7 @@ import "./messagebox.css";
 import React, { useEffect, useState, useRef } from "react";
 import { Message, ModRequest } from "./types";
 import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
 import RobotIcon from "@mui/icons-material/SmartToy";
 import UserIcon from "@mui/icons-material/Person";
 
@@ -29,7 +30,13 @@ const MessageBox: React.FC<MessageProps> = ({ msg }) => {
                 }}
             >
                 {msg.client_id !== "bot" ? <UserIcon /> : <RobotIcon />}
-                <p>{msg.message.data}</p>
+                <Box flexDirection="column">
+                    <p>{msg.message.data}</p>
+                    <Divider />
+                    <Box sx={{color: "lightgrey"}}>
+                        <p>msgid: {msg.id}</p>
+                    </Box>
+                </Box>
             </Box>
             <br />
         </>

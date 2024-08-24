@@ -120,7 +120,10 @@ func startModerator() {
 				case "deny":
 					updateRequest(req.ID, false, true)
 					log.Infof("denied %v", req.ID)
-					// TODO: send message to client
+					// send message to client
+					storeRequest(moderatorID, req.UserEmail,
+						fmt.Sprintf("Moderator denied the request: %s", req.ID),
+						"txt", true, true)
 					continue
 				default:
 					log.Warnf("[%s] unknown Message.Data %s. Continuing...", moderatorID, req.Message.Data)

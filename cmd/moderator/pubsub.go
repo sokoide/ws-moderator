@@ -83,17 +83,20 @@ type NewRequestMonitor struct {
 func (o *DatabaseMonitor) updated(request *ModRequest) {
 	if request.Moderated == true {
 		log.Infof("[%s] message %s updated, clientID: %s", o.ID, request.Message.Data, request.ClientID)
-		data, err := json.Marshal(request)
-		if err != nil {
-			// if disconnected, it comes here
-			log.Warnf("[%s] json.Marshal failed in updated, %v", o.ID, err)
-			return
-		}
 
-		err = o.Conn.WriteMessage(websocket.TextMessage, []byte(data))
-		if err != nil {
-			// if disconnected, it comes here
-			log.Warnf("[%s] Mod WriteMessage failed, %v", o.ID, err)
+		if request.Approved {
+			data, err := json.Marshal(request)
+			if err != nil {
+				// if disconnected, it comes here
+				log.Warnf("[%s] json.Marshal failed in updated, %v", o.ID, err)
+				return
+			}
+
+			err = o.Conn.WriteMessage(websocket.TextMessage, []byte(data))
+			if err != nil {
+				// if disconnected, it comes here
+				log.Warnf("[%s] Mod WriteMessage failed, %v", o.ID, err)
+			}
 		}
 	}
 }
