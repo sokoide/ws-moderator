@@ -19,7 +19,7 @@ const Navbar = () => {
 
     return (
         <AppBar position="static">
-            <Toolbar>
+            <Toolbar className="toolbar">
                 <IconButton
                     edge="start"
                     color="inherit"

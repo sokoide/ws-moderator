@@ -1,6 +1,6 @@
 "use client";
 
-import "./chat.css";
+import "./moderator.css";
 import React, { useContext, useEffect, useState, useRef } from "react";
 import { AppContext } from "@/context/app-context";
 import Box from "@mui/material/Box";
@@ -57,30 +57,6 @@ const Moderator = () => {
                 messagePaneRef.current.scrollHeight;
         }
     }, [messages]);
-
-    const onSend = () => {
-        console.log("onSend: %O", inputValue);
-        let msg = ClientUtil.sendMessage(
-            socket,
-            "",
-            "",
-            loginInfo.email,
-            "txt",
-            inputValue,
-            false,
-            false
-        );
-        if (msg != null) {
-            setMessages((prevMessages) => [...prevMessages, msg]);
-            setInputValue("");
-        } else {
-            console.error("WebSocket is not open");
-        }
-    };
-
-    const handleInputChange = (e) => {
-        setInputValue(e.target.value);
-    };
 
     const handleApprove = (msgid) => {
         console.log("handleApprove: %O", msgid);

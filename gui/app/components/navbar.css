@@ -6,6 +6,10 @@
     align-items: center;
 }
 
+.toolbar {
+    background-color: darkblue;
+}
+
 .links {
     display: flex;
     align-items: center;

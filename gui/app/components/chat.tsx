@@ -106,11 +106,7 @@ const Chat = () => {
                 </Box>
 
                 <Box
-                    sx={{
-                        padding: 2,
-                        backgroundColor: blue[50],
-                        textAlign: "center",
-                    }}
+                    className="message-input"
                 >
                     <textarea
                         ref={taRef}
