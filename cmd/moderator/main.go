@@ -250,8 +250,13 @@ func startModerator() {
 					}
 					claudes.Store(req.UserEmail, c)
 					go claude.StartConversation(c.user, c.cin, c.cout)
-					defer close(c.cin)
+					defer func(c *ClaudeComm) {
+						// remove c from claudes map
+						claudes.Delete(c.user)
+						close(c.cin)
+					}(c)
 				}
+				log.Debugf("[%s] sending to c.cin", clientID)
 				c.cin <- claude.Request{Prompt: req.Message.Data}
 				res, ok := <-c.cout
 				if ok && res.Succeeded {
