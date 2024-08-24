@@ -20,8 +20,10 @@ const Moderator = () => {
     const { loginInfo, login, logout } = useContext(AppContext);
 
     useEffect(() => {
-        // TODO: make it env var
-        const ws = new WebSocket("ws://127.0.0.1:80/moderator");
+        const wsUrl =
+            process.env.NEXT_PUBLIC_MODERATOR_WS ?? "undefined";
+        console.log("wsUrl: %O", wsUrl)
+        const ws = new WebSocket(wsUrl)
 
         ws.onopen = () => {
             console.log("useEffect: onopen");

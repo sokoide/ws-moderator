@@ -25,8 +25,10 @@ const Chat = () => {
     }
 
     useEffect(() => {
-        // TODO: make it envvar
-        const ws = new WebSocket("ws://127.0.0.1:80/chat");
+        const wsUrl =
+            process.env.NEXT_PUBLIC_CHAT_WS ?? "undefined";
+        console.log("wsUrl: %O", wsUrl)
+        const ws = new WebSocket(wsUrl)
 
         ws.onopen = () => {
             console.log("useEffect: onopen");
