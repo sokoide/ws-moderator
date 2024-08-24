@@ -54,7 +54,7 @@ const ModerateButtons: React.FC<ModerateButtonsProps> = ({ msg, onApprove, onDen
 };
 
 const ModeratorMessageBox: React.FC<ModerateButtonsProps> = ({ msg, onApprove, onDeny }) => {
-    console.info("message: %O", msg);
+    // console.info("message: %O", msg);
 
     const onChildApprove = (msgid) => {
         console.log("onChildApprove: %O", msgid);

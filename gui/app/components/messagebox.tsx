@@ -13,7 +13,7 @@ interface MessageProps {
 }
 
 const MessageBox: React.FC<MessageProps> = ({ msg }) => {
-    console.info("message: %O", msg);
+    // console.info("message: %O", msg);
 
     return (
         <>

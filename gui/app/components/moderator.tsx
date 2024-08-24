@@ -30,9 +30,16 @@ const Moderator = () => {
 
         ws.onmessage = (e) => {
             let msg = JSON.parse(e.data) as ModRequest;
-            console.log("useEffect: onmessage: %O", msg);
             if (msg.message.kind === "ping") return;
-            setMessages((prevMessages) => [...prevMessages, msg]);
+            console.log("useEffect: onmessage: %O", msg);
+            if (msg.moderated === true) {
+                console.log("removing moderated message");
+                setMessages((prevMessages) =>
+                    prevMessages.filter((m) => m.id !== msg.id)
+                );
+            } else {
+                setMessages((prevMessages) => [...prevMessages, msg]);
+            }
         };
 
         ws.onerror = (error) => {
