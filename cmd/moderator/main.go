@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/minio/websocket"
@@ -108,24 +107,60 @@ func startModerator() {
 		}
 
 		// ping
-		ticker := time.NewTicker(time.Second * 5)
-		defer ticker.Stop()
+		go pingModerator(ws, moderatorID)
 
-		for {
-			for {
-				select {
-				case <-ticker.C:
-					log.Debug("tick")
-					msg := makeModRequestJsonBytes("", "bot", "", "ping", "ping", true, true)
-					err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
-					if err != nil {
-						// if disconnected, it comes here
-						log.Warnf("[%s] Mod WriteMessage failed, %v", moderatorID, err)
-						return
-					}
-				}
-			}
-		}
+		// for {
+		// 	_, message, err := ws.ReadMessage()
+		// 	if err != nil {
+		// 		// if disconnected, it comes here
+		// 		log.Warnf("[%s] ReadMessage failed, %v", clientID, err)
+		// 		break
+		// 	}
+		// 	log.Infof("[%s] Received Message: %s", clientID, string(message))
+
+		// 	// convert message into ModRequest
+		// 	var req ModRequest
+		// 	err = json.Unmarshal(message, &req)
+		// 	if err != nil {
+		// 		log.Errorf("[%s] failed to parse %s", clientID, string(message))
+		// 		continue
+		// 	}
+		// 	if req.Message.Kind == "system" && req.Message.Data == "" {
+		// 		// return all approved documents for the user
+		// 		reqs := loadRequestsForUserEmail(req.UserEmail)
+		// 		for _, req := range reqs {
+		// 			msg := makeModRequestJsonBytes(req.ID, req.ClientID, req.UserEmail, req.Message.Kind, req.Message.Data, req.Approved, req.Moderated)
+		// 			log.Debugf("sending %+v", req)
+		// 			err = ws.WriteMessage(websocket.TextMessage, msg)
+		// 			if err != nil {
+		// 				// if disconnected, it comes here
+		// 				log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
+		// 				break
+		// 			}
+		// 		}
+		// 		continue
+		// 	}
+
+		// 	// save it
+		// 	storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, true, true)
+
+		// 	// send a message to client.
+		// 	msg := makeModRequestJsonBytes("", "bot", "", "txt", "Moderating & generating...", true, false)
+		// 	err = ws.WriteMessage(websocket.TextMessage, msg)
+		// 	if err != nil {
+		// 		// if disconnected, it comes here
+		// 		log.Warnf("[%s] WriteMessage failed, %v", clientID, err)
+		// 		break
+		// 	}
+
+		// 	// call AI
+		// 	if strings.HasPrefix(req.Message.Data, "/imagine") {
+		// 		// TODO: image generation
+		// 	} else {
+		// 		// TODO: text generation
+		// 		storeRequest("bot", req.UserEmail, "Dummy response from Claude3...", "txt", false, false)
+		// 	}
+		// }
 
 	})
 
