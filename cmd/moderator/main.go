@@ -1,9 +1,11 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"strings"
 	"sync"
@@ -25,6 +27,9 @@ type ClaudeComm struct {
 	cin  chan claude.Request
 	cout chan claude.Response
 }
+
+//go:embed out/*
+var content embed.FS
 
 // globals
 var o options = options{
@@ -60,9 +65,15 @@ func startModerator() {
 		}}
 
 	// "/" for react
+	// Create a file system from the embedded content
+	contentFS, _ := fs.Sub(content, "out")
 
-	// "/moderator" from clients
-	http.HandleFunc("/moderator", func(writer http.ResponseWriter, request *http.Request) {
+	// Create a file server to serve the embedded static files
+	fs := http.FileServer(http.FS(contentFS))
+	http.Handle("/", fs)
+
+	// moderator websocket
+	http.HandleFunc("/go/moderator", func(writer http.ResponseWriter, request *http.Request) {
 		ws, err := upgrader.Upgrade(writer, request, nil)
 		if err != nil {
 			log.Info(err)
@@ -153,8 +164,8 @@ func startModerator() {
 
 	})
 
-	// "/chat" from clients
-	http.HandleFunc("/chat", func(writer http.ResponseWriter, request *http.Request) {
+	// chat (user) websocket
+	http.HandleFunc("/go/chat", func(writer http.ResponseWriter, request *http.Request) {
 		ws, err := upgrader.Upgrade(writer, request, nil)
 		if err != nil {
 			log.Info(err)

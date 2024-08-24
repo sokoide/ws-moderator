@@ -26,27 +26,26 @@ const getLoginInfo = () => {
         email: "",
     };
 
-    // if (typeof window !== "undefined") {
-    //     const stored = localStorage.getItem("loginInfo");
-    //     if (stored == null) return loginInfo;
+    if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("loginInfo");
+        if (stored == null) return loginInfo;
 
-    //     try {
-    //         let ret = JSON.parse(stored);
-    //         return ret;
-    //     } catch (e) {
-    //         return loginInfo;
-    //     }
-    // }
-    // console.log(
-    //     "getLoginInfo: window NOT available, using the empty login info"
-    // );
+        try {
+            let ret = JSON.parse(stored);
+            return ret;
+        } catch (e) {
+            return loginInfo;
+        }
+    }
+    console.log(
+        "getLoginInfo: window NOT available, using the empty login info"
+    );
     return loginInfo;
 };
 
 // ContextProvider
 export const AppContextProvider: React.FC<AppContextProviderProps> = ({ children }) => {
     // ----- states -----
-    // const [loginInfo, setLoginInfo] = useState(getLoginInfo());
     const [loginInfo, setLoginInfo] = useState(getLoginInfo());
 
     // save loginInfo in localStorage whenever it changes
