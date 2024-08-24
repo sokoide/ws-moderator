@@ -30,16 +30,24 @@ const Chat = () => {
 
         ws.onopen = () => {
             console.log("useEffect: onopen");
-            ClientUtil.sendMessage(ws, "", "", loginInfo.email, "system", "", false, false);
+            ClientUtil.sendMessage(
+                ws,
+                "",
+                "",
+                loginInfo.email,
+                "system",
+                "",
+                false,
+                false
+            );
         };
 
         ws.onmessage = (e) => {
-            let msg = JSON.parse(e.data) as ModRequest
+            let msg = JSON.parse(e.data) as ModRequest;
             console.log("useEffect: onmessage: %O", msg);
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                msg,
-            ]);
+            if (msg.client_id === "bot" || msg.user_email === loginInfo.email) {
+                setMessages((prevMessages) => [...prevMessages, msg]);
+            }
         };
 
         ws.onerror = (error) => {
@@ -67,9 +75,18 @@ const Chat = () => {
 
     const onSend = () => {
         console.log("onSend: %O", inputValue);
-        let msg = ClientUtil.sendMessage(socket, "", "", loginInfo.email, "txt", inputValue, false, false);
+        let msg = ClientUtil.sendMessage(
+            socket,
+            "",
+            "",
+            loginInfo.email,
+            "txt",
+            inputValue,
+            false,
+            false
+        );
         if (msg != null) {
-            // Note: don't add the messge here.
+            // Note: don't add the message here.
             // the requested message will be sent back from the server
             // setMessages((prevMessages) => [...prevMessages, msg]);
             setInputValue("");
@@ -107,9 +124,7 @@ const Chat = () => {
                     })}
                 </Box>
 
-                <Box
-                    className="message-input"
-                >
+                <Box className="message-input">
                     <textarea
                         ref={taRef}
                         value={inputValue}
