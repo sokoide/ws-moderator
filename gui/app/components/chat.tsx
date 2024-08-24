@@ -8,6 +8,7 @@ import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import MessageBox from "./messagebox";
 import { Message, ModRequest } from "./types";
+import ClientUtil from "./client_util";
 import { blue } from "@mui/material/colors";
 import { v4 as uuid } from "uuid";
 
@@ -24,24 +25,12 @@ const Chat = () => {
     }
 
     useEffect(() => {
-        // TODO: replace it with socket.io?
+        // TODO: make it envvar
         const ws = new WebSocket("ws://127.0.0.1:80/chat");
 
         ws.onopen = () => {
             console.log("useEffect: onopen");
-
-            let msg: ModRequest = {
-                id: "",
-                client_id: "",
-                user_email: loginInfo.email,
-                message: {
-                    kind: "system",
-                    data: "",
-                },
-                approved: false,
-                moderated: false,
-            };
-            ws.send(JSON.stringify(msg));
+            ClientUtil.sendMessage(ws, "", "", loginInfo.email, "system", "", false, false);
         };
 
         ws.onmessage = (e) => {
@@ -78,19 +67,8 @@ const Chat = () => {
 
     const onSend = () => {
         console.log("onSend: %O", inputValue);
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            let msg: ModRequest = {
-                id: "",
-                client_id: "",
-                user_email: loginInfo.email,
-                message: {
-                    kind: "txt",
-                    data: inputValue,
-                },
-                approved: false,
-                moderated: false,
-            };
-            socket.send(JSON.stringify(msg));
+        let msg = ClientUtil.sendMessage(socket, "", "", loginInfo.email, "txt", inputValue, false, false);
+        if (msg != null) {
             setMessages((prevMessages) => [...prevMessages, msg]);
             setInputValue("");
         } else {

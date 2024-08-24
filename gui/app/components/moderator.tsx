@@ -6,6 +6,7 @@ import { AppContext } from "@/context/app-context";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import ModeratorMessageBox from "./moderator_messagebox";
+import ClientUtil from "./client_util";
 import { Message, ModRequest } from "./types";
 import { green } from "@mui/material/colors";
 import { v4 as uuid } from "uuid";
@@ -19,22 +20,12 @@ const Moderator = () => {
     const { loginInfo, login, logout } = useContext(AppContext);
 
     useEffect(() => {
+        // TODO: make it env var
         const ws = new WebSocket("ws://127.0.0.1:80/moderator");
 
         ws.onopen = () => {
             console.log("useEffect: onopen");
-            let msg: ModRequest = {
-                id: "",
-                client_id: "",
-                user_email: "",
-                message: {
-                    kind: "system",
-                    data: "",
-                },
-                approved: false,
-                moderated: false,
-            };
-            ws.send(JSON.stringify(msg));
+            ClientUtil.sendMessage(ws, "", "", "", "system", "", false, false);
         };
 
         ws.onmessage = (e) => {
@@ -69,20 +60,17 @@ const Moderator = () => {
 
     const onSend = () => {
         console.log("onSend: %O", inputValue);
-        // TODO: make it a function
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            let msg: ModRequest = {
-                id: "",
-                client_id: "",
-                user_email: loginInfo.email,
-                message: {
-                    kind: "txt",
-                    data: inputValue,
-                },
-                approved: false,
-                moderated: false,
-            };
-            socket.send(JSON.stringify(msg));
+        let msg = ClientUtil.sendMessage(
+            socket,
+            "",
+            "",
+            loginInfo.email,
+            "txt",
+            inputValue,
+            false,
+            false
+        );
+        if (msg != null) {
             setMessages((prevMessages) => [...prevMessages, msg]);
             setInputValue("");
         } else {
@@ -96,42 +84,30 @@ const Moderator = () => {
 
     const handleApprove = (msgid) => {
         console.log("handleApprove: %O", msgid);
-        // send message
-        // TODO: make it a function
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            let msg: ModRequest = {
-                id: msgid,
-                client_id: "",
-                user_email: loginInfo.email,
-                message: {
-                    kind: "system",
-                    data: "approve",
-                },
-                approved: false,
-                moderated: false,
-            };
-            socket.send(JSON.stringify(msg));
-        }
+        ClientUtil.sendMessage(
+            socket,
+            msgid,
+            "",
+            loginInfo.email,
+            "system",
+            "approve",
+            false,
+            false
+        );
     };
 
     const handleDeny = (msgid) => {
         console.log("handleDeny: %O", msgid);
-        // TODO: send message
-        // TODO: make it a function
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            let msg: ModRequest = {
-                id: msgid,
-                client_id: "",
-                user_email: loginInfo.email,
-                message: {
-                    kind: "system",
-                    data: "deny",
-                },
-                approved: false,
-                moderated: false,
-            };
-            socket.send(JSON.stringify(msg));
-        }
+        ClientUtil.sendMessage(
+            socket,
+            msgid,
+            "",
+            loginInfo.email,
+            "system",
+            "deny",
+            false,
+            false
+        );
     };
 
     return (
