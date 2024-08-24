@@ -33,8 +33,10 @@ const MessageBox: React.FC<MessageProps> = ({ msg }) => {
                 <Box flexDirection="column">
                     <p>{msg.message.data}</p>
                     <Divider />
-                    <Box sx={{color: "lightgrey"}}>
-                        <p>msgid: {msg.id}</p>
+                    <Box sx={{ color: "lightgrey" }}>
+                        <p>
+                            msgid: {msg.id}, kind: {msg.message.kind}
+                        </p>
                     </Box>
                 </Box>
             </Box>

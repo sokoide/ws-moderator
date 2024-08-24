@@ -45,7 +45,7 @@ const Chat = () => {
         ws.onmessage = (e) => {
             let msg = JSON.parse(e.data) as ModRequest;
             console.log("useEffect: onmessage: %O", msg);
-            if (msg.client_id === "bot" || msg.user_email === loginInfo.email) {
+            if (msg.client_id === "bot" && msg.id === "" || msg.user_email === loginInfo.email) {
                 setMessages((prevMessages) => [...prevMessages, msg]);
             }
         };
