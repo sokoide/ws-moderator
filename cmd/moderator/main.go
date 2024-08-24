@@ -114,15 +114,24 @@ func startModerator() {
 					}
 					continue
 				case "approve":
+					updatedRequest := updateRequest(req.ID, true, true)
+					if updatedRequest == nil {
+						log.Errorf("failed to approve %v", req.ID)
+						continue
+					}
 					log.Infof("approved %v", req.ID)
-					updateRequest(req.ID, true, true)
 					continue
 				case "deny":
-					updateRequest(req.ID, false, true)
+					updatedRequest := updateRequest(req.ID, false, true)
+					if updatedRequest == nil {
+						log.Errorf("failed to deny %v", req.ID)
+						continue
+					}
 					log.Infof("denied %v", req.ID)
-					// send message to client
-					storeRequest(moderatorID, req.UserEmail,
-						fmt.Sprintf("Moderator denied the request: %s", req.ID),
+
+					// record a message for client
+					storeRequest("bot", updatedRequest.UserEmail,
+						fmt.Sprintf("Moderator denied the response from AI: %s", updatedRequest.ID),
 						"txt", true, true)
 					continue
 				default:
@@ -194,10 +203,12 @@ func startModerator() {
 			}
 
 			// save it
-			storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, true, true)
+			savedRequestID := storeRequest(clientID, req.UserEmail, req.Message.Data, req.Message.Kind, true, true)
 
 			// send a message to client.
-			msg := makeModRequestJsonBytes("", "bot", "", "txt", "Moderating & generating...", true, false)
+			msg := makeModRequestJsonBytes("", "bot", "", "txt",
+				fmt.Sprintf("Moderating & generating %s", savedRequestID),
+				true, false)
 			err = ws.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
 				// if disconnected, it comes here
@@ -211,7 +222,7 @@ func startModerator() {
 			} else {
 				// TODO: text generation
 				storeRequest("bot", req.UserEmail,
-					fmt.Sprintf("%s dummy response from Claude3...", req.Message.Data),
+					"Dummy response from Claude3...",
 					"txt", false, false)
 			}
 		}

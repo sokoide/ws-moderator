@@ -30,7 +30,7 @@ func init() {
 	}
 }
 
-func storeRequest(clientID string, userEmail string, messageData string, messageKind string, approved bool, moderated bool) {
+func storeRequest(clientID string, userEmail string, messageData string, messageKind string, approved bool, moderated bool) string {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -49,7 +49,7 @@ func storeRequest(clientID string, userEmail string, messageData string, message
 	insertResult, err := collection.InsertOne(ctx, document)
 	if err != nil {
 		log.Errorf("Failed to write %v in MongoDB, %v", document, err)
-		return
+		return ""
 	}
 
 	log.Infof("Inserted a single document: %v\n", insertResult.InsertedID)
@@ -57,14 +57,15 @@ func storeRequest(clientID string, userEmail string, messageData string, message
 	id, ok := insertResult.InsertedID.(primitive.ObjectID)
 	if !ok {
 		log.Errorf("Failed to get MongoDB ObjectID for %s", document)
-		return
+		return ""
 	}
 
 	request.ID = id.Hex()
 	db.notifyObservers(request)
+	return request.ID
 }
 
-func updateRequest(msgid string, approved bool, moderated bool) bool {
+func updateRequest(msgid string, approved bool, moderated bool) *ModRequest {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -84,7 +85,7 @@ func updateRequest(msgid string, approved bool, moderated bool) bool {
 
 	if err != nil {
 		log.Errorf("Failed to update %s, %v", msgid, err)
-		return false
+		return nil
 	}
 
 	// get the doc
@@ -92,12 +93,13 @@ func updateRequest(msgid string, approved bool, moderated bool) bool {
 	err = collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		log.Errorf("Failed to get the updated document %s, %v", msgid, err)
-		return false
+		return nil
 	}
 	log.Debugf("Document found: %v", result)
 
-	db.notifyObservers(newModRequest(result.ID.Hex(), result.ClientID, result.UserEmail, result.MessageKind, result.MessageData, result.Approved, result.Moderated))
-	return true
+	modRequest := newModRequest(result.ID.Hex(), result.ClientID, result.UserEmail, result.MessageKind, result.MessageData, result.Approved, result.Moderated)
+	db.notifyObservers(modRequest)
+	return modRequest
 }
 
 func loadRequestsForUserEmail(userEmail string) []ModRequest {

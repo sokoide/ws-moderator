@@ -50,6 +50,8 @@ const Login = () => {
                     </>
                 ) : (
                     <>
+                        <p>Note: The <b>Employee Personal Email</b>(case sensitive) will be used as the chat conversation key.</p>
+                        <hr/>
                         <div className="input">
                             Author Name:
                             <input
@@ -71,7 +73,7 @@ const Login = () => {
                             />
                         </div>
                         <div className="input">
-                            Employee Personal Email:
+                            Employee Personal Email (case sensitive):
                             <input
                                 type="text"
                                 name="email"

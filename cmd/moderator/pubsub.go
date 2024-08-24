@@ -97,6 +97,7 @@ func (o *DatabaseMonitor) updated(request *ModRequest) {
 				// if disconnected, it comes here
 				log.Warnf("[%s] Mod WriteMessage failed, %v", o.ID, err)
 			}
+		} else {
 		}
 	}
 }
