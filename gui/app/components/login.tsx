@@ -13,32 +13,20 @@ const Login = () => {
     }
 
     const { loginInfo, login, logout } = context;
-    const [username, setUsername] = useState("");
-    const [employee, setEmployee] = useState("");
     const [email, setEmail] = useState("");
-
-    const handleUsername = (e: ChangeEvent<HTMLInputElement>) => {
-        setUsername(e.target.value);
-    };
-
-    const handleEmployee = (e: ChangeEvent<HTMLInputElement>) => {
-        setEmployee(e.target.value);
-    };
 
     const handleEmail = (e: ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
     };
 
     const handleLogin = () => {
-        if (username === "") return;
-        if (employee === "") return;
         if (email === "") return;
-        login(username, employee, email);
+        login(email);
         if (typeof window !== "undefined") window.location.href = "/";
     };
 
     const handleLogout = () => {
-        setUsername("");
+        setEmail("");
         logout();
     };
 
@@ -47,8 +35,6 @@ const Login = () => {
             <div className="content">
                 {loginInfo?.loggedIn ? (
                     <>
-                        <p>Author: {loginInfo.username}</p>
-                        <p>Employee Name: {loginInfo.employee}</p>
                         <p>Employee Email: {loginInfo.email}</p>
                         <Button variant="contained" onClick={handleLogout}>
                             Logout
@@ -62,26 +48,6 @@ const Login = () => {
                             key.
                         </p>
                         <hr />
-                        <div className="input">
-                            Author Name:
-                            <input
-                                type="text"
-                                name="username"
-                                id="username"
-                                className="username"
-                                onChange={handleUsername}
-                            />
-                        </div>
-                        <div className="input">
-                            Employee Name:
-                            <input
-                                type="text"
-                                name="employee"
-                                id="employee"
-                                className="username"
-                                onChange={handleEmployee}
-                            />
-                        </div>
                         <div className="input">
                             Employee Personal Email (case sensitive):
                             <input

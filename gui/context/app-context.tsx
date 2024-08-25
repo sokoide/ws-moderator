@@ -4,11 +4,9 @@ import { createContext, useEffect, useState, ReactNode} from "react";
 interface AppContextType {
     loginInfo?: {
         loggedIn: boolean;
-        username: string;
-        employee: string;
         email: string;
     };
-    login: (username: string, employee: string, email: string) => void;
+    login: (email: string) => void;
     logout: () => void;
 }
 export const AppContext = createContext<AppContextType | null>(null);
@@ -21,8 +19,6 @@ interface AppContextProviderProps {
 const getLoginInfo = () => {
     let loginInfo = {
         loggedIn: false,
-        username: "",
-        employee: "",
         email: "",
     };
 
@@ -55,14 +51,12 @@ export const AppContextProvider: React.FC<AppContextProviderProps> = ({ children
     }, [loginInfo]);
 
     // --- functions ---
-    const login = (username: string, employee: string, email: string) => {
-        console.log("login(%O, %O, %O)", username, employee, email);
+    const login = (email: string) => {
+        console.log("login(%O)", email);
 
         setLoginInfo((prev: AppContextType["loginInfo"] | undefined) => ({
             ...prev,
             loggedIn: true,
-            username: username,
-            employee: employee,
             email: email,
         }));
     };
@@ -72,8 +66,6 @@ export const AppContextProvider: React.FC<AppContextProviderProps> = ({ children
         setLoginInfo((prev: AppContextType["loginInfo"] | undefined) => ({
             ...prev,
             loggedIn: false,
-            username: "",
-            employee: "",
             email: "",
         }));
     };

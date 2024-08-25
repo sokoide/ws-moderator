@@ -16,6 +16,7 @@ import { ModRequest } from "./types";
 import ClientUtil from "./client_util";
 import { v4 as uuid } from "uuid";
 import { useRouter } from "next/navigation";
+import Divider from "@mui/material/Divider";
 
 const Chat = () => {
     const router = useRouter();
@@ -31,10 +32,16 @@ const Chat = () => {
     const [messages, setMessages] = useState<ModRequest[]>([]);
     const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
+    const eopRef = useRef<HTMLDivElement | null>(null);
 
     if (loginInfo != null && loginInfo.loggedIn === false) {
         if (typeof window !== "undefined") window.location.href = "/login";
     }
+    const scrollToBottom = () => {
+        if (eopRef.current) {
+            eopRef.current.scrollTop = eopRef.current.scrollHeight;
+        }
+    };
 
     useEffect(() => {
         const wsUrl = process.env.NEXT_PUBLIC_CHAT_WS ?? "undefined";
@@ -83,17 +90,13 @@ const Chat = () => {
     }, []);
 
     useEffect(() => {
-        if (messagePaneRef.current) {
-            messagePaneRef.current.scrollTop =
-                messagePaneRef.current.scrollHeight;
-        }
-
         setCheckboxStates(
             messages.map((message) => ({
                 msg: message,
                 checked: false,
             }))
         );
+        scrollToBottom();
     }, [messages]);
 
     const onSend = () => {
@@ -149,7 +152,13 @@ const Chat = () => {
         }
 
         // todo: URL encode
-        let target_page: string = "/confirm?msgid_txt=" + id_txt + "&msgid_url=" + id_url + "&email=" + email;
+        let target_page: string =
+            "/confirm?msgid_txt=" +
+            id_txt +
+            "&msgid_url=" +
+            id_url +
+            "&email=" +
+            email;
         router.push(target_page);
     };
 
@@ -187,58 +196,65 @@ const Chat = () => {
     };
 
     return (
-        <div>
-            <Box
-                my={4}
-                mx={4}
-                width="100%"
-                sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "95vh",
-                }}
-            >
+        <>
+            <div ref={eopRef} style={{ overflowY: "auto" }}>
                 <Box
-                    ref={messagePaneRef}
+                    my={4}
+                    mx={4}
+                    width="100%"
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "100vh",
+                    }}
                 >
-                    {checkboxStates.map(({ msg, checked }) => (
-                        <MessageBox
-                            msg={msg}
-                            checked={checked}
-                            onCheckboxChange={handleCheckboxChange(msg.id)}
-                            key={uuid()}
-                        />
-                    ))}
-                </Box>
+                    <Box ref={messagePaneRef}>
+                        {checkboxStates.map(({ msg, checked }) => (
+                            <MessageBox
+                                msg={msg}
+                                checked={checked}
+                                onCheckboxChange={handleCheckboxChange(msg.id)}
+                                key={uuid()}
+                            />
+                        ))}
+                    </Box>
 
-                <Box
-                    className="message-input"
-                    display="flex"
-                    flexDirection="row"
-                    gap={1}
-                >
-                    <textarea
-                        ref={taRef}
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        placeholder="Type here..."
-                        rows={4}
-                        className="bordered-input"
-                    />
-                    <Button variant="contained" onClick={onSend}>
-                        Ask
-                    </Button>
+<Divider />
+                    <Box
+                        className="message-input"
+                        display="flex"
+                        flexDirection="row"
+                        gap={1}
+                    >
+                        <textarea
+                            ref={taRef}
+                            value={inputValue}
+                            onChange={handleInputChange}
+                            placeholder="Type here..."
+                            rows={4}
+                            className="bordered-input"
+                        />
+                        <Button variant="contained" onClick={onSend}>
+                            Ask
+                        </Button>
+                    </Box>
+                    <Box
+                        display="flex"
+                        justifyContent="center"
+                        p={2}
+                        gap={4}
+                        className="message-input"
+                    >
+                        <Button onClick={onUncheckAll}>
+                            Uncheck All
+                        </Button>
+                        <Button onClick={onComplete}>
+                            Complete
+                        </Button>
+                    </Box>
                 </Box>
-                <Box display="flex" justifyContent="center" p={2} gap={4} className="message-input">
-                    <Button variant="contained" onClick={onUncheckAll}>
-                        Uncheck All
-                    </Button>
-                    <Button variant="contained" onClick={onComplete}>
-                        Complete
-                    </Button>
-                </Box>
-            </Box>
-        </div>
+            </div>
+        </>
     );
 };
 

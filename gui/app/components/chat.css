@@ -10,12 +10,10 @@
     /* Optional: rounds the corners */
     padding: 8px;
     /* Optional: adds padding inside the input */
-    width: 100%;
+    width: 90%;
 }
 
 .message-input {
-    /* background-color:lightblue; */
-    background-color: rgb(233, 233, 233);
     padding: 1em;
     text-align: center;
 }
