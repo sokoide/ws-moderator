@@ -45,6 +45,7 @@ type ClaudeContent struct {
 }
 
 // globals
+var apiKey string
 var claudeConns int32
 
 // functions
@@ -191,8 +192,6 @@ func StartConversation(id string, cin chan Request, cout chan Response) {
 		cout <- Response{Succeeded: true, Text: response}
 	}
 }
-
-var apiKey string
 
 func init() {
 	apiKey = os.Getenv("CLAUDE_API_KEY")

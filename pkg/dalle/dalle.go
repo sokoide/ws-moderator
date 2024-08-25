@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sync/atomic"
 )
 
 // types
@@ -37,10 +38,17 @@ type DalleResponse struct {
 
 // globals
 var apiKey string
+var dalleConns int32
 
 // functions
+func GetConns() int32 {
+	return atomic.LoadInt32(&dalleConns)
+}
+
 func GenerateImage(req DalleRequest) (string, error) {
 	url := "https://api.openai.com/v1/images/generations" // Correct API endpoint
+	atomic.AddInt32(&dalleConns, 1)
+	defer atomic.AddInt32(&dalleConns, -1)
 
 	requestBody, err := json.Marshal(req)
 	if err != nil {

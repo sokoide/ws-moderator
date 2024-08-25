@@ -40,7 +40,7 @@ func parseArgs() {
 
 func connectAndSend() {
 	// connect to o.host:o.port and send/receive websocket messages
-	u := fmt.Sprintf("ws://%s:%d/chat", o.host, o.port)
+	u := fmt.Sprintf("ws://%s:%d/go/chat", o.host, o.port)
 
 	log.Infof("Connecting to: %v", u)
 

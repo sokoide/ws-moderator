@@ -6,6 +6,7 @@ import (
 	"github.com/minio/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/sokoide/ws-ai/pkg/claude"
+	"github.com/sokoide/ws-ai/pkg/dalle"
 )
 
 func pingModerator(ws *websocket.Conn, moderatorID string) {
@@ -17,7 +18,7 @@ func pingModerator(ws *websocket.Conn, moderatorID string) {
 		for {
 			select {
 			case <-ticker.C:
-				log.Infof("tick: current claude conns: %d", claude.GetConns())
+				log.Infof("tick: current claude conns: %d, dalle conns: %d", claude.GetConns(), dalle.GetConns())
 				msg := makeModRequestJsonBytes("", "bot", "", "ping", "ping", true, true)
 				err = ws.WriteMessage(websocket.TextMessage, []byte(msg))
 				if err != nil {
