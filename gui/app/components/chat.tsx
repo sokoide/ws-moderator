@@ -116,17 +116,47 @@ const Chat = () => {
         }
     };
 
+    const onComplete = () => {
+        console.log("onComplete");
+        let id_txt_count: number = 0;
+        let id_url_count: number = 0;
+        let id_txt: string = "";
+        let id_url: string = "";
+
+        checkboxStates.map(({ msg, checked }) => {
+            console.log("* %O:%O -> %O", msg.id, msg.message.kind, checked);
+            if (checked) {
+                if (msg.message.kind === "txt") {
+                    id_txt_count++;
+                    id_txt = msg.id;
+                } else if (msg.message.kind === "url") {
+                    id_url_count++;
+                    id_url = msg.user_email;
+                }
+            }
+        });
+        if (id_txt_count !== 1) {
+            alert("please select only one text");
+            return;
+        }
+        if (id_url_count !== 1) {
+            alert("please select only one image");
+            return;
+        }
+
+        // TODO: complete
+    };
+
+    const onUncheckAll = () => {
+        console.log("onUncheckAll");
+        setCheckboxesState(false);
+    };
+
     const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
         setInputValue(e.target.value);
     };
 
     // State to manage multiple checkboxes
-    messages.map(function (msg, i) {
-        if (msg.client_id === "bot" && msg.id !== "") {
-            console.log("* %O", msg.id);
-        }
-    });
-
     const [checkboxStates, setCheckboxStates] = useState<
         { msg: ModRequest; checked: boolean }[]
     >([]);
@@ -178,7 +208,7 @@ const Chat = () => {
                     ))}
                 </Box>
 
-                <Box className="message-input">
+                <Box className="message-input" display="flex" flexDirection="row" gap={1}>
                     <textarea
                         ref={taRef}
                         value={inputValue}
@@ -188,7 +218,16 @@ const Chat = () => {
                         className="bordered-input"
                     />
                     <Button variant="contained" onClick={onSend}>
-                        Send
+                        Ask
+                    </Button>
+                </Box>
+                <Box display="flex" gap={2} justifyContent="center" padding={2}>
+                    <Button variant="contained" onClick={onUncheckAll}>
+                        Uncheck All
+                    </Button>
+                    &nbsp;
+                    <Button variant="contained" onClick={onComplete}>
+                        Complete
                     </Button>
                 </Box>
             </Box>

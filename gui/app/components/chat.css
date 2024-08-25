@@ -14,7 +14,8 @@
 }
 
 .message-input {
-    background-color:lightblue;
+    /* background-color:lightblue; */
+    background-color: rgb(233, 233, 233);
     padding: 1em;
     text-align: center;
 }
