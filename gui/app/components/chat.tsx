@@ -29,7 +29,7 @@ const Chat = () => {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [inputValue, setInputValue] = useState("");
     const [messages, setMessages] = useState<ModRequest[]>([]);
-    const taRef = useRef(null);
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const eopRef = useRef<HTMLDivElement | null>(null);
     const titleRef = useRef<HTMLInputElement>("");
     const userRef = useRef<HTMLInputElement>("");
@@ -39,9 +39,10 @@ const Chat = () => {
         if (typeof window !== "undefined") window.location.href = "/login";
     }
     const scrollToBottom = () => {
-        if (eopRef.current) {
-            eopRef.current.scrollTop = eopRef.current.scrollHeight;
-        }
+         if (messagesEndRef.current) {
+            console.log("*** scrollToBottom");
+             messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+         }
     };
 
     useEffect(() => {
@@ -97,7 +98,13 @@ const Chat = () => {
                 checked: false,
             }))
         );
-        scrollToBottom();
+
+        // Use setTimeout to ensure scroll happens after DOM update
+        const timer = setTimeout(() => {
+            scrollToBottom();
+        }, 10);
+
+        return () => clearTimeout(timer);
     }, [messages]);
 
     const onSend = () => {
@@ -130,8 +137,14 @@ const Chat = () => {
         let id_url: string = "";
         let email: string = "";
 
-        if (!userRef.current || !employeeRef.current || !titleRef.current ||
-            userRef.current.value.trim() === "" || employeeRef.current.value.trim() === "" || titleRef.current.value.trim() === ""){
+        if (
+            !userRef.current ||
+            !employeeRef.current ||
+            !titleRef.current ||
+            userRef.current.value.trim() === "" ||
+            employeeRef.current.value.trim() === "" ||
+            titleRef.current.value.trim() === ""
+        ) {
             alert("please input Title, User and Employee");
             return;
         }
@@ -160,12 +173,18 @@ const Chat = () => {
 
         let target_page: string = "/confirm?";
         let params: string =
-            "msgid_txt=" + encodeURIComponent(id_txt) +
-            "&msgid_url=" + encodeURIComponent(id_url) +
-            "&email=" + encodeURIComponent(email) +
-            "&title=" + encodeURIComponent(titleRef.current.value) +
-            "&user=" + encodeURIComponent(userRef.current.value) +
-            "&employee=" + encodeURIComponent(employeeRef.current.value);
+            "msgid_txt=" +
+            encodeURIComponent(id_txt) +
+            "&msgid_url=" +
+            encodeURIComponent(id_url) +
+            "&email=" +
+            encodeURIComponent(email) +
+            "&title=" +
+            encodeURIComponent(titleRef.current.value) +
+            "&user=" +
+            encodeURIComponent(userRef.current.value) +
+            "&employee=" +
+            encodeURIComponent(employeeRef.current.value);
         const encoded_page = target_page + params;
         console.log(encoded_page);
         router.push(encoded_page);
@@ -206,29 +225,39 @@ const Chat = () => {
 
     return (
         <>
-            <div ref={eopRef} style={{ overflowY: "auto" }}>
-                <Box
-                    my={4}
-                    mx={4}
-                    width="100%"
-                    sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        height: "100vh",
-                    }}
-                >
-                    <Box>
-                        {checkboxStates.map(({ msg, checked }) => (
-                            <MessageBox
-                                msg={msg}
-                                checked={checked}
-                                onCheckboxChange={handleCheckboxChange(msg.id)}
-                                key={uuid()}
-                            />
-                        ))}
+            <div ref={eopRef} className="container">
+                <Box>
+                    <Box
+                        my={4}
+                        mx={8}
+                        width="100%"
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            height: "90vh",
+                            overflowY: "auto",
+                        }}
+                    >
+                        <Box>
+                            {checkboxStates.map(({ msg, checked }) => (
+                                <MessageBox
+                                    msg={msg}
+                                    checked={checked}
+                                    onCheckboxChange={handleCheckboxChange(
+                                        msg.id
+                                    )}
+                                    key={uuid()}
+                                />
+                            ))}
+                        </Box>
+                        <div ref={messagesEndRef} />
                     </Box>
 
-<Divider />
+                    <p>
+                        [*] When completed, input <b>Title, User, Employee</b>,
+                        check <b>1 text &amp; 1 image</b> →{" "}
+                        <b>[Review &amp; Complete]</b> button{" "}
+                    </p>
                     <Box
                         className="message-input"
                         display="flex"
@@ -236,7 +265,6 @@ const Chat = () => {
                         gap={1}
                     >
                         <textarea
-                            ref={taRef}
                             value={inputValue}
                             onChange={handleInputChange}
                             placeholder="Type here..."
@@ -254,9 +282,24 @@ const Chat = () => {
                         gap={4}
                         className="message-input"
                     >
-                        <TextField id="title" inputRef={titleRef} label="Title of a book" variant="outlined"/>
-                        <TextField id="user" inputRef={userRef} label="User who used AI today" variant="outlined"/>
-                        <TextField id="employee" inputRef={employeeRef} label="Employee Name" variant="outlined"/>
+                        <TextField
+                            id="title"
+                            inputRef={titleRef}
+                            label="Title of a book"
+                            variant="outlined"
+                        />
+                        <TextField
+                            id="user"
+                            inputRef={userRef}
+                            label="User who used AI today"
+                            variant="outlined"
+                        />
+                        <TextField
+                            id="employee"
+                            inputRef={employeeRef}
+                            label="Employee Name"
+                            variant="outlined"
+                        />
                         <Button variant="outlined" onClick={onUncheckAll}>
                             Uncheck All
                         </Button>

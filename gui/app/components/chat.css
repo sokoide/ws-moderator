@@ -10,7 +10,7 @@
     /* Optional: rounds the corners */
     padding: 8px;
     /* Optional: adds padding inside the input */
-    width: 90%;
+    width: 100%;
 }
 
 .message-input {
