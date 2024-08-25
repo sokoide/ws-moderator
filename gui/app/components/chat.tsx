@@ -9,14 +9,13 @@ import React, {
     ChangeEvent,
 } from "react";
 import { AppContext } from "@/context/app-context";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import { TextField, Box, Button, Divider } from "@mui/material";
+
 import MessageBox from "./messagebox";
 import { ModRequest } from "./types";
 import ClientUtil from "./client_util";
 import { v4 as uuid } from "uuid";
 import { useRouter } from "next/navigation";
-import Divider from "@mui/material/Divider";
 
 const Chat = () => {
     const router = useRouter();
@@ -30,9 +29,11 @@ const Chat = () => {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [inputValue, setInputValue] = useState("");
     const [messages, setMessages] = useState<ModRequest[]>([]);
-    const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
     const eopRef = useRef<HTMLDivElement | null>(null);
+    const titleRef = useRef<HTMLInputElement>("");
+    const userRef = useRef<HTMLInputElement>("");
+    const employeeRef = useRef<HTMLInputElement>("");
 
     if (loginInfo != null && loginInfo.loggedIn === false) {
         if (typeof window !== "undefined") window.location.href = "/login";
@@ -129,6 +130,12 @@ const Chat = () => {
         let id_url: string = "";
         let email: string = "";
 
+        if (!userRef.current || !employeeRef.current || !titleRef.current ||
+            userRef.current.value.trim() === "" || employeeRef.current.value.trim() === "" || titleRef.current.value.trim() === ""){
+            alert("please input Title, User and Employee");
+            return;
+        }
+
         checkboxStates.map(({ msg, checked }) => {
             console.log("* %O:%O -> %O", msg.id, msg.message.kind, checked);
             if (checked) {
@@ -151,15 +158,17 @@ const Chat = () => {
             return;
         }
 
-        // todo: URL encode
-        let target_page: string =
-            "/confirm?msgid_txt=" +
-            id_txt +
-            "&msgid_url=" +
-            id_url +
-            "&email=" +
-            email;
-        router.push(target_page);
+        let target_page: string = "/confirm?";
+        let params: string =
+            "msgid_txt=" + encodeURIComponent(id_txt) +
+            "&msgid_url=" + encodeURIComponent(id_url) +
+            "&email=" + encodeURIComponent(email) +
+            "&title=" + encodeURIComponent(titleRef.current.value) +
+            "&user=" + encodeURIComponent(userRef.current.value) +
+            "&employee=" + encodeURIComponent(employeeRef.current.value);
+        const encoded_page = target_page + params;
+        console.log(encoded_page);
+        router.push(encoded_page);
     };
 
     const onUncheckAll = () => {
@@ -208,7 +217,7 @@ const Chat = () => {
                         height: "100vh",
                     }}
                 >
-                    <Box ref={messagePaneRef}>
+                    <Box>
                         {checkboxStates.map(({ msg, checked }) => (
                             <MessageBox
                                 msg={msg}
@@ -245,11 +254,14 @@ const Chat = () => {
                         gap={4}
                         className="message-input"
                     >
-                        <Button onClick={onUncheckAll}>
+                        <TextField id="title" inputRef={titleRef} label="Title of a book" variant="outlined"/>
+                        <TextField id="user" inputRef={userRef} label="User who used AI today" variant="outlined"/>
+                        <TextField id="employee" inputRef={employeeRef} label="Employee Name" variant="outlined"/>
+                        <Button variant="outlined" onClick={onUncheckAll}>
                             Uncheck All
                         </Button>
-                        <Button onClick={onComplete}>
-                            Complete
+                        <Button variant="outlined" onClick={onComplete}>
+                            Review and Complete
                         </Button>
                     </Box>
                 </Box>

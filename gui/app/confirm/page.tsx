@@ -15,6 +15,8 @@ const ConfirmPage = () => {
     const sp = useSearchParams();
     const msgid_txt = sp.get("msgid_txt");
     const msgid_url = sp.get("msgid_url");
+
+    const title = sp.get("title");
     const user = sp.get("user");
     const employee = sp.get("employee");
     const email = sp.get("email");
@@ -79,6 +81,9 @@ const ConfirmPage = () => {
             >
                 <Box>
                     <Box p={2}>
+                        <p>
+                            Title: <b>{title}</b>
+                        </p>
                         <p>
                             User: <b>{user}</b>
                         </p>
