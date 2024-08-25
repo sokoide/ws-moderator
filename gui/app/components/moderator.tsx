@@ -9,8 +9,7 @@ import React, {
     ChangeEvent,
 } from "react";
 import { AppContext } from "@/context/app-context";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import { Box, Button, Typography, List, ListItem } from "@mui/material";
 import ModeratorMessageBox from "./moderator_messagebox";
 import ClientUtil from "./client_util";
 import { Message, ModRequest } from "./types";
@@ -30,6 +29,9 @@ const Moderator = () => {
     const [messages, setMessages] = useState<ModRequest[]>([]);
     const messagePaneRef = useRef<HTMLDivElement>(null);
     const taRef = useRef(null);
+    const [logs, setLogs] = useState<string[]>([]);
+    const MAX_LOG_MESSAGES = 1000;
+    const logEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const wsUrl = process.env.NEXT_PUBLIC_MODERATOR_WS ?? "undefined";
@@ -43,8 +45,11 @@ const Moderator = () => {
 
         ws.onmessage = (e) => {
             let msg = JSON.parse(e.data) as ModRequest;
+
             if (msg.message.kind === "ping") return;
             console.log("useEffect: onmessage: %O", msg);
+
+            addLogMessage(formatMessage(msg), true);
             if (msg.moderated === true) {
                 console.log("removing moderated message");
                 setMessages((prevMessages) =>
@@ -77,6 +82,33 @@ const Moderator = () => {
                 messagePaneRef.current.scrollHeight;
         }
     }, [messages]);
+
+    // scroll to the bottom
+    useEffect(() => {
+        logEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [logs]);
+
+
+    const formatMessage = (msg: ModRequest) : string => {
+        return `${msg.user_email} | ${msg.message.kind} | aprv:${msg.approved} | mdrt:${msg.moderated} | ${msg.message.data.slice(0, 256)}`
+    }
+
+    const addLogMessage = (message: string, add_timestamp: boolean) => {
+        var msg: string
+        if (add_timestamp === true) {
+            msg = `${new Date().toLocaleTimeString()}: ${message}`;
+        }else {
+            msg = message;
+        }
+        setLogs((prevLogs) => {
+            // Ensure we keep only the last MAX_LOG_MESSAGES messages
+            const newLogs = [...prevLogs, msg];
+            if (newLogs.length > MAX_LOG_MESSAGES) {
+                newLogs.shift(); // Remove the oldest message
+            }
+            return newLogs;
+        });
+    };
 
     const handleApprove = (msgid: string) => {
         console.log("handleApprove: %O", msgid);
@@ -112,7 +144,7 @@ const Moderator = () => {
                 sx={{
                     display: "flex",
                     flexDirection: "column",
-                    height: "95vh",
+                    height: "60vh",
                 }}
             >
                 <Box
@@ -135,6 +167,34 @@ const Moderator = () => {
                         );
                     })}
                 </Box>
+            </Box>
+            <Box
+                sx={{
+                    maxHeight: "33vh",
+                    height: "33vh",
+                    overflowY: "auto",
+                    padding: 2,
+                    // backgroundColor: "#1e1e1e",
+                    backgroundColor: "black",
+                    color: "green",
+                    borderRadius: "4px",
+                    fontFamily: "monospace",
+                }}
+            >
+                <Typography variant="h6" sx={{ marginBottom: 1 }}>
+                    Log Monitor
+                </Typography>
+                <List>
+                    {logs.map((log, index) => (
+                        <ListItem
+                            key={index}
+                            sx={{ padding: 0, wordWrap: "break-word" }}
+                        >
+                            <Typography variant="body2">{log}</Typography>
+                        </ListItem>
+                    ))}
+                    <div ref={logEndRef} />
+                </List>
             </Box>
         </div>
     );
