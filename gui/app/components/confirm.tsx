@@ -3,12 +3,11 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ImageBox from "./image_box";
-import { Message, ModRequest } from "./types";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import { ModRequest } from "./types";
+import { Box, Button, Divider, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import Divider from "@mui/material/Divider";
 import html2pdf from "html2pdf.js";
+import "./confirm.css";
 
 const Confirm = () => {
     const router = useRouter();
@@ -71,7 +70,7 @@ const Confirm = () => {
         }
     };
 
-    const registerInMongoDB = async () : Promise<boolean> => {
+    const registerInMongoDB = async (): Promise<boolean> => {
         console.log("registerInMongoDB");
 
         let params: string =
@@ -109,7 +108,7 @@ const Confirm = () => {
         openEmailClient();
 
         // register it in mongodb
-        const mongoResult : boolean = await registerInMongoDB();
+        const mongoResult: boolean = await registerInMongoDB();
         if (!mongoResult) {
             alert("Failed to register the completion record. Please try again");
         }
@@ -157,31 +156,80 @@ const Confirm = () => {
                     p={2}
                     sx={{
                         width: "95%",
-                        border: "2px solid grey",
-                        borderRadius: 1,
+                        border: "none",
                     }}
                 >
                     <Box>
-                        <Box p={2}>
-                            <p>
-                                Title: <b>{title}</b>
-                            </p>
-                            <p>
-                                User: <b>{user}</b>
-                            </p>
-                            <p>
-                                Employee: <b>{employee}</b>
-                            </p>
-                            <p>
-                                Employee Email: <b>{email}</b>
-                            </p>
-                        </Box>
-                        <Box p={2}>
-                            <ImageBox msg={msg} cn="" />
+                        <Box
+                            p={2}
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                textAlign: "center",
+                            }}
+                        >
+                            <Typography variant="h2" sx={{ fontSize: "2rem" }}>
+                                {title}
+                            </Typography>
                         </Box>
                         <Divider />
-                        <Box p={2}>
-                            <p>{text}</p>
+                        <Box
+                            p={1}
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                textAlign: "center",
+                            }}
+                        >
+                            <Typography
+                                variant="h2"
+                                sx={{ fontSize: "1.5rem" }}
+                            >
+                                {user}
+                            </Typography>
+                        </Box>
+                        <Box
+                            p={1}
+                            sx={{
+                                gap: 2,
+                                display: "flex",
+                                justifyContent: "flex-end",
+                            }}
+                        >
+                            Employee: <b>{employee}</b>
+                        </Box>
+                        <Box
+                            p={1}
+                            sx={{
+                                gap: 2,
+                                display: "flex",
+                                justifyContent: "flex-end",
+                            }}
+                        >
+                            Employee Email: <b>{email}</b>
+                        </Box>
+                        <Box
+                            p={1}
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                textAlign: "center",
+                            }}
+                        >
+                            <ImageBox msg={msg} cn="" />
+                        </Box>
+                        {/* <div className="page-break"></div> */}
+                        {/* <div style={{ pageBreakBefore: "always" }}></div> */}
+                        <Box p={2}
+                            sx={{
+                                gap: 2,
+                                display: "flex",
+                            }}
+                        >
+                            {text}
                         </Box>
                     </Box>
                 </Box>
