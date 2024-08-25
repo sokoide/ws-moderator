@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -16,6 +17,7 @@ var client *mongo.Client
 
 const MONGODB_NAME = "familyday"
 const MONGODB_COLLECTION = "requests"
+const MONGODB_COLLECTION_COMPLETION = "completion"
 
 func init() {
 	var err error
@@ -202,7 +204,44 @@ func loadRequests(moderated bool) []ModRequest {
 	}
 
 	if err := cursor.Err(); err != nil {
-		log.Errorf("error %v in loadRequestsl", err)
+		log.Errorf("error %v in loadRequests", err)
 	}
 	return requests
+}
+
+func storeCompletion(title string, user string, employee string, userEmail string, textID string, imageID string) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	oidText, err := primitive.ObjectIDFromHex(textID)
+	if err != nil {
+		log.Errorf("Failed to convert textID:%s to ObjectID. %v", textID, err)
+		return err
+	}
+	oidImage, err := primitive.ObjectIDFromHex(imageID)
+	if err != nil {
+		log.Errorf("Failed to convert imageID:%s to ObjectID. %v", imageID, err)
+		return err
+	}
+
+	document := map[string]interface{}{
+		"ts":         time.Now(),
+		"title":      title,
+		"user":       user,
+		"employee":   employee,
+		"user_email": userEmail,
+		"text_id":    oidText,
+		"image_id":   oidImage,
+	}
+
+	collection := client.Database(MONGODB_NAME).Collection(MONGODB_COLLECTION_COMPLETION)
+
+	insertResult, err := collection.InsertOne(ctx, document)
+	if err != nil {
+		log.Errorf("Failed to write %v in MongoDB, %v", document, err)
+		return err
+	}
+
+	log.Infof("Inserted a single document: %v\n", insertResult.InsertedID)
+	return nil
 }

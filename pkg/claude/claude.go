@@ -134,7 +134,7 @@ func deserializeHistory(id string) []ClaudeMessage {
 	filepath := fmt.Sprintf("%s.gob", id)
 	file, err := os.Open(filepath)
 	if err != nil {
-		log.Errorf("Error opening file:", err)
+		log.Errorf("Error opening file: %v", err)
 		return history
 	}
 	defer file.Close()
@@ -144,7 +144,7 @@ func deserializeHistory(id string) []ClaudeMessage {
 
 	// Decode the data into the variable
 	if err := decoder.Decode(&history); err != nil {
-		log.Errorf("Error decoding GOB:", err)
+		log.Errorf("Error decoding GOB: %v", err)
 		return history
 	}
 
