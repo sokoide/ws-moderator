@@ -85,6 +85,13 @@ const Chat = () => {
             messagePaneRef.current.scrollTop =
                 messagePaneRef.current.scrollHeight;
         }
+
+        setCheckboxStates(
+            messages.map((message) => ({
+                msg: message,
+                checked: false,
+            }))
+        );
     }, [messages]);
 
     const onSend = () => {
@@ -113,6 +120,36 @@ const Chat = () => {
         setInputValue(e.target.value);
     };
 
+    // State to manage multiple checkboxes
+    messages.map(function (msg, i) {
+        if (msg.client_id === "bot" && msg.id !== "") {
+            console.log("* %O", msg.id);
+        }
+    });
+
+    const [checkboxStates, setCheckboxStates] = useState<
+        { msg: ModRequest; checked: boolean }[]
+    >([]);
+
+    // Handler to update the checkbox state
+    const handleCheckboxChange =
+        (id: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+            setCheckboxStates((prevStates) =>
+                prevStates.map((checkbox) =>
+                    checkbox.msg.id === id
+                        ? { ...checkbox, checked: event.target.checked }
+                        : checkbox
+                )
+            );
+        };
+
+    // Function to programmatically check/uncheck checkboxes
+    const setCheckboxesState = (checked: boolean) => {
+        setCheckboxStates((prevStates) =>
+            prevStates.map((checkbox) => ({ ...checkbox, checked }))
+        );
+    };
+
     return (
         <div>
             <Box
@@ -131,9 +168,14 @@ const Chat = () => {
                         overflowX: "auto",
                     }}
                 >
-                    {messages.map(function (msg, i) {
-                        return <MessageBox msg={msg} key={uuid()} />;
-                    })}
+                    {checkboxStates.map(({ msg, checked }) => (
+                        <MessageBox
+                            msg={msg}
+                            checked={checked}
+                            onCheckboxChange={handleCheckboxChange(msg.id)}
+                            key={uuid()}
+                        />
+                    ))}
                 </Box>
 
                 <Box className="message-input">

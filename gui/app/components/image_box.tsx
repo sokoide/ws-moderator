@@ -13,10 +13,7 @@ interface MessageProps {
 }
 
 const ImageBox: React.FC<MessageProps> = ({ msg }) => {
-    // src="http://localhost/images/alice_gmail.com/2e632d95-96db-4e81-a22c-7c7d39db5eb6.png"
-    // src={msg.message.data}
     const imageUrl = msg.message.data;
-    console.log("* %O", imageUrl)
 
     return (
         <>
