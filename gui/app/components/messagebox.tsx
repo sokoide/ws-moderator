@@ -57,7 +57,7 @@ const MessageBox: React.FC<MessageProps> = ({
                     {msg.client_id !== "bot" ? <UserIcon /> : <RobotIcon />}
                     <Box display="flex" flexDirection="column">
                         {msg.message.kind === "url" ? (
-                            <ImageBox msg={msg} />
+                            <ImageBox msg={msg} cn="zoom"/>
                         ) : (
                             <div className="box">
                                 <p>{getHighlightedText(msg.message.data)}</p>

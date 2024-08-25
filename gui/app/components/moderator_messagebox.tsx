@@ -114,7 +114,7 @@ const ModeratorMessageBox: React.FC<ModerateButtonsProps> = ({
                     <Box flexDirection={"column"}>
                         <Box>
                             {msg.message.kind === "url" ? (
-                                <ImageBox msg={msg} />
+                                <ImageBox msg={msg} cn="zoom"/>
                             ) : (
                                 <div className="box">
                                     <p>

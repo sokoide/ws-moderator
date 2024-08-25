@@ -259,7 +259,6 @@ const Chat = () => {
                         <b>[Review &amp; Complete]</b> button{" "}
                     </p>
                     <Box
-                        className="message-input"
                         display="flex"
                         flexDirection="row"
                         gap={1}
@@ -275,18 +274,17 @@ const Chat = () => {
                             Ask
                         </Button>
                     </Box>
-                    <Box
-                        display="flex"
+                    <Box display="flex"
                         justifyContent="center"
-                        p={2}
+                        p={1}
                         gap={4}
-                        className="message-input"
                     >
                         <TextField
                             id="title"
                             inputRef={titleRef}
                             label="Title of a book"
                             variant="outlined"
+                            style={{ width: "40%" }}
                         />
                         <TextField
                             id="user"
@@ -300,6 +298,13 @@ const Chat = () => {
                             label="Employee Name"
                             variant="outlined"
                         />
+                    </Box>
+                    <Box
+                        display="flex"
+                        justifyContent="center"
+                        p={1}
+                        gap={4}
+                    >
                         <Button variant="outlined" onClick={onUncheckAll}>
                             Uncheck All
                         </Button>

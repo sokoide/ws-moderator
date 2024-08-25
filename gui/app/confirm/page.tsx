@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ImageBox from "../components/image_box";
 import { Message, ModRequest } from "../components/types";
@@ -8,6 +8,8 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import { useRouter } from "next/navigation";
 import Divider from "@mui/material/Divider";
+import html2pdf from "html2pdf.js";
+import jsPDF from "jspdf";
 
 const ConfirmPage = () => {
     const router = useRouter();
@@ -26,17 +28,52 @@ const ConfirmPage = () => {
     const [msg, setMsg] = useState<ModRequest>({
         message: { kind: "url", data: "TBD" },
     });
+    const contentRef = useRef<HTMLDivElement>(null);
 
     const onBack = () => {
         router.push("/");
     };
 
+    const handleSaveAsPDF = (filepath: string) => {
+        if (contentRef.current) {
+            const element = contentRef.current;
+            const options = {
+                margin: [0.5, 0.5],
+                filename: filepath,
+                html2canvas: { scale: 2, useCORS: true, },
+                jsPDF: {
+                    unit: "in",
+                    format: "A4",
+                    orientation: "portrait",
+                },
+            };
+
+            html2pdf().from(element).set(options).save();
+            console.log("%O saved");
+        }
+    };
+
+    const openEmailClient = () => {
+        const subject = `Family Day 2024: ${title}`;
+        const body = `*****************************\n* Attach the generated PDF here*\n******************************\n\n\nThank you very much for joining the family day 2024 and making \"${title}\". I hope you enjoyed the story & image generation!\n\nThank you,\n2024 Family Day`;
+        const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
+            subject
+        )}&body=${encodeURIComponent(body)}`;
+
+        window.location.href = mailtoLink;
+    };
+
     const onComplete = () => {
-        // TODO: send email
-        alert(
-            "TODO: Make a PDF and send an email here. All done. Thank you for joining us!"
-        );
-        router.push("/login");
+        // TODO: register it in mongodb
+
+        // PDF
+        const invalidChars = /[\/:*?"<>|\\]/g;
+
+        const filename = (email + "_" + title).replace(invalidChars, "_");
+        handleSaveAsPDF(`${filename}.pdf`);
+
+        // send email
+        openEmailClient();
     };
 
     useEffect(() => {
@@ -64,60 +101,62 @@ const ConfirmPage = () => {
 
     return (
         <>
-            <Box
-                whiteSpace="pre-line"
-                my={4}
-                mx={4}
-                width="100%"
-                display="flex"
-                flexDirection="column"
-                gap={2}
-                p={2}
-                sx={{
-                    width: "95%",
-                    border: "2px solid grey",
-                    borderRadius: 1,
-                }}
-            >
-                <Box>
-                    <Box p={2}>
-                        <p>
-                            Title: <b>{title}</b>
-                        </p>
-                        <p>
-                            User: <b>{user}</b>
-                        </p>
-                        <p>
-                            Employee: <b>{employee}</b>
-                        </p>
-                        <p>
-                            Employee Email: <b>{email}</b>
-                        </p>
-                    </Box>
-                    <Box p={2}>
-                        <ImageBox msg={msg} />
-                    </Box>
-                    <Divider />
-                    <Box p={2}>
-                        <p>{text}</p>
+            <div ref={contentRef}>
+                <Box
+                    whiteSpace="pre-line"
+                    my={4}
+                    mx={4}
+                    width="100%"
+                    display="flex"
+                    flexDirection="column"
+                    gap={2}
+                    p={2}
+                    sx={{
+                        width: "95%",
+                        border: "2px solid grey",
+                        borderRadius: 1,
+                    }}
+                >
+                    <Box>
+                        <Box p={2}>
+                            <p>
+                                Title: <b>{title}</b>
+                            </p>
+                            <p>
+                                User: <b>{user}</b>
+                            </p>
+                            <p>
+                                Employee: <b>{employee}</b>
+                            </p>
+                            <p>
+                                Employee Email: <b>{email}</b>
+                            </p>
+                        </Box>
+                        <Box p={2}>
+                            <ImageBox msg={msg} />
+                        </Box>
+                        <Divider />
+                        <Box p={2}>
+                            <p>{text}</p>
+                        </Box>
                     </Box>
                 </Box>
-            </Box>
-            <Box
-                display="flex"
-                gap={2}
-                justifyContent="center"
-                padding={2}
-                flexDirection="row"
-            >
-                <Button variant="contained" onClick={onBack}>
-                    Go Back
-                </Button>
-                &nbsp;
-                <Button variant="contained" onClick={onComplete}>
-                    Complete
-                </Button>
-            </Box>
+                <Box
+                    display="flex"
+                    gap={2}
+                    justifyContent="center"
+                    padding={2}
+                    flexDirection="row"
+                >
+                    <Button variant="contained" onClick={onBack}>
+                        Go Back
+                    </Button>
+                    &nbsp;
+                    <Button variant="contained" onClick={onComplete}>
+                        Send E-mail and Complete
+                    </Button>
+                </Box>
+            </div>
         </>
     );
 };

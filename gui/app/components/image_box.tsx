@@ -10,15 +10,16 @@ import UserIcon from "@mui/icons-material/Person";
 
 interface MessageProps {
     msg: ModRequest;
+    cn: string;
 }
 
-const ImageBox: React.FC<MessageProps> = ({ msg }) => {
+const ImageBox: React.FC<MessageProps> = ({ msg, cn}) => {
     const imageUrl = msg.message.data;
 
     return (
         <>
-            <div className="zoom">
-                <div className="zoom">
+            <div className={cn}>
+                <div className={cn}>
                     <img
                         src={imageUrl}
                         alt="{msg.message.data}"
