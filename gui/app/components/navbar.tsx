@@ -35,7 +35,7 @@ const Navbar = () => {
                     &nbsp;
                     <div className="user">
                         {loginInfo?.loggedIn ? (
-                            <Link href="/login">{loginInfo.username}</Link>
+                            <Link href="/login">{loginInfo.email}</Link>
                         ) : (
                             <Link href="/login">Login</Link>
                         )}

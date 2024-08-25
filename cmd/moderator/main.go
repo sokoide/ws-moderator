@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -13,13 +14,16 @@ import (
 	"github.com/minio/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/sokoide/ws-ai/pkg/claude"
+	"github.com/sokoide/ws-ai/pkg/dalle"
 )
 
 // types
 type options struct {
-	port     int
-	logLevel string
-	level    log.Level
+	port            int
+	logLevel        string
+	level           log.Level
+	imageBasePath   string
+	imageHostIPAddr string
 }
 type ClaudeComm struct {
 	user string
@@ -41,12 +45,31 @@ var claudes sync.Map
 func parseArgs() {
 	flag.IntVar(&o.port, "port", o.port, "Port to listen on")
 	flag.StringVar(&o.logLevel, "logLevel", o.logLevel, "Log level")
+	flag.StringVar(&o.imageBasePath, "imageBasePath", "./images", "Path to image base directory")
+	flag.StringVar(&o.imageHostIPAddr, "imageHostIPAddr", "127.0.0.1", "Your IP address for React to download images from")
 	flag.Parse()
 
 	level, err := log.ParseLevel(o.logLevel)
 	if err == nil {
 		o.level = level
 	}
+}
+
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Allow all origins
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == http.MethodOptions {
+			// Respond to preflight requests
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the next handler
+		next.ServeHTTP(w, r)
+	})
 }
 
 func startModerator() {
@@ -60,10 +83,25 @@ func startModerator() {
 			// return r.Header.Get("Origin") == "http://allowed-origin.com"
 		}}
 
-	// "/react" for react
+	// "/" for react
 	staticDir := filepath.Join("gui", "out")
+	staticDirFull, _ := filepath.Abs(staticDir)
+
 	fs := http.FileServer(http.Dir(staticDir))
-	http.Handle("/", fs)
+	http.Handle("/", http.StripPrefix("/", fs))
+	log.Infof("http://%s/ is open for browsers, serving from %s", o.imageHostIPAddr, staticDirFull)
+
+	// "/images" for images
+	staticImageDir := "images"
+	staticImageDirFull, _ := filepath.Abs(staticImageDir)
+
+	fsImage := http.FileServer(http.Dir(staticImageDir))
+
+	// http.Handle("/images/", http.StripPrefix("/images/", fsImage))
+	imageHandler := http.StripPrefix("/images/", fsImage)
+	http.Handle("/images/", withCORS(imageHandler))
+
+	log.Infof("http://%s/images is open for images, serving from %s", o.imageHostIPAddr, staticImageDirFull)
 
 	// moderator websocket
 	http.HandleFunc("/go/moderator", func(writer http.ResponseWriter, request *http.Request) {
@@ -232,13 +270,35 @@ func startModerator() {
 
 			// call AI
 			if strings.HasPrefix(req.Message.Data, "/imagine") {
-				// TODO: image generation
-			} else {
-				// TODO: text generation
-				// storeRequest("bot", req.UserEmail,
-				// 	"Dummy response from Claude3...",
-				// 	"txt", false, false)
+				// image generation
+				prompt := req.Message.Data[len("/imagine"):]
+				prompt = strings.TrimSpace(prompt)
 
+				dalleReq := dalle.DalleRequest{
+					Model:  "dall-e-3",
+					Prompt: prompt,
+					Size:   "1024x1024",
+					N:      1,
+				}
+				imageURL, err := dalle.GenerateImage(dalleReq)
+				if err == nil {
+					log.Infof("[%s] Image generated at %s", clientID, imageURL)
+					log.Debugf("[%s] downloading %s", clientID, imageURL)
+					filename, err := downloadFile(imageURL, o.imageBasePath, req.UserEmail)
+					if err == nil {
+						url := "http://" + path.Join(o.imageHostIPAddr, o.imageBasePath, convertEmailToPath(req.UserEmail), filename)
+						log.Infof("[%s] %s downloaded", clientID, url)
+						storeRequest("bot", req.UserEmail, url, "url", false, false)
+					} else {
+						log.Errorf("[%s] Failed to download %s, err: %v", clientID, imageURL, err)
+						storeRequest("bot", req.UserEmail, "Failed to download the generated image. Please retry", "txt", true, true)
+					}
+				} else {
+					log.Errorf("[%s] Failed to generate an image: %v", clientID, err)
+					storeRequest("bot", req.UserEmail, "Failed to get an answer from AI. Please retry.", "txt", true, true)
+				}
+			} else {
+				// Text generation
 				var c *ClaudeComm
 
 				if value, ok := claudes.Load(req.UserEmail); ok {
@@ -270,7 +330,6 @@ func startModerator() {
 					storeRequest("bot", req.UserEmail,
 						"Failed to get an answer from AI. Please retry.",
 						"txt", true, true)
-					break
 				}
 			}
 		}

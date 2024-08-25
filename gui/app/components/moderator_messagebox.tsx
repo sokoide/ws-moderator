@@ -1,7 +1,8 @@
 "use client";
 
 import "./messagebox.css";
-import React, { ChangeEvent, MouseEvent } from "react";
+import React, { MouseEvent } from "react";
+import ImageBox from "./image_box";
 import { ModRequest } from "./types";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -15,7 +16,11 @@ interface ModerateButtonsProps {
     onDeny: (value: string) => void;
 }
 
-const ModerateButtons: React.FC<ModerateButtonsProps> = ({ msg, onApprove, onDeny }) => {
+const ModerateButtons: React.FC<ModerateButtonsProps> = ({
+    msg,
+    onApprove,
+    onDeny,
+}) => {
     const onChildApprove = (e: MouseEvent<HTMLButtonElement>) => {
         console.log("onChildApproveButton: %O", e.currentTarget.value);
         onApprove(e.currentTarget.value);
@@ -35,11 +40,19 @@ const ModerateButtons: React.FC<ModerateButtonsProps> = ({ msg, onApprove, onDen
                     <p>msgid: {msg.id}</p>
                 </Box>
                 <Box flexDirection={"row"}>
-                    <Button variant="contained" value={msg.id} onClick={onChildApprove}>
+                    <Button
+                        variant="contained"
+                        value={msg.id}
+                        onClick={onChildApprove}
+                    >
                         Approve
                     </Button>
                     &nbsp;
-                    <Button variant="contained" value={msg.id} onClick={onChildDeny}>
+                    <Button
+                        variant="contained"
+                        value={msg.id}
+                        onClick={onChildDeny}
+                    >
                         Deny
                     </Button>
                 </Box>
@@ -48,7 +61,11 @@ const ModerateButtons: React.FC<ModerateButtonsProps> = ({ msg, onApprove, onDen
     );
 };
 
-const ModeratorMessageBox: React.FC<ModerateButtonsProps> = ({ msg, onApprove, onDeny }) => {
+const ModeratorMessageBox: React.FC<ModerateButtonsProps> = ({
+    msg,
+    onApprove,
+    onDeny,
+}) => {
     // console.info("message: %O", msg);
 
     const onChildApprove = (msgid: string) => {
@@ -59,6 +76,19 @@ const ModeratorMessageBox: React.FC<ModerateButtonsProps> = ({ msg, onApprove, o
     const onChildDeny = (msgid: string) => {
         console.log("onChildDeny: %O", msgid);
         onDeny(msgid);
+    };
+
+    const getHighlightedText = (text: string) => {
+        const parts = text.split(/(\/imagine)/g);
+        return parts.map((part, index) =>
+            part === "/imagine" ? (
+                <span key={index} className="highlight">
+                    {part}
+                </span>
+            ) : (
+                part
+            )
+        );
     };
 
     if (msg.moderated) {
@@ -81,7 +111,15 @@ const ModeratorMessageBox: React.FC<ModerateButtonsProps> = ({ msg, onApprove, o
                     {msg.client_id !== "bot" ? <UserIcon /> : <RobotIcon />}
                     <Box flexDirection={"column"}>
                         <Box>
-                            <p>{msg.message.data}</p>
+                            {msg.message.kind === "url" ? (
+                                <ImageBox msg={msg} />
+                            ) : (
+                                <div className="box">
+                                    <p>
+                                        {getHighlightedText(msg.message.data)}
+                                    </p>
+                                </div>
+                            )}
                         </Box>
                         {msg.moderated || msg.approved ? (
                             ""

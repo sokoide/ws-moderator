@@ -1,1 +1,4 @@
 docker/mongo/
+images/
+moderator
+!cmd/moderator

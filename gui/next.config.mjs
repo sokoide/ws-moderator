@@ -6,6 +6,8 @@ const nextConfig = {
     },
     output: "export", // Configure the app to be exported as static HTML and JavaScript
     trailingSlash: true, // Optional: Adds trailing slashes to paths
+    basePath: "",
+    assetPrefix: "",
 };
 
 export default nextConfig;

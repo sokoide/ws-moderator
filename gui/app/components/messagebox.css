@@ -1,0 +1,20 @@
+.zoom {
+}
+
+.zoom>img {
+    width: 256px;
+    object-fit: contain;
+    transition: all 0.3s ease;
+    transform-origin: top left;
+}
+
+.zoom:hover>img {
+    transform: scale(3.0);
+}
+
+.box {
+}
+
+.highlight {
+    background-color: lightblue;
+}

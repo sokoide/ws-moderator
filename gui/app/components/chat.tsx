@@ -19,7 +19,7 @@ import { v4 as uuid } from "uuid";
 const Chat = () => {
     const context = useContext(AppContext);
     if (context === null) {
-        console.error("context not available")
+        console.error("context not available");
         return;
     }
 
@@ -113,8 +113,6 @@ const Chat = () => {
         setInputValue(e.target.value);
     };
 
-    let userText = "1st line\n2nd line\n3rd line";
-
     return (
         <div>
             <Box
@@ -147,7 +145,6 @@ const Chat = () => {
                         rows={4}
                         className="bordered-input"
                     />
-
                     <Button variant="contained" onClick={onSend}>
                         Send
                     </Button>

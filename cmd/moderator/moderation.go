@@ -8,13 +8,13 @@ import (
 )
 
 type Message struct {
-	Kind string `json:"kind"` // txt, png or jpg
-	Data string `json:"data"` // txt or base64 encoded image
+	Kind string `json:"kind"` // "txt" | "url"
+	Data string `json:"data"` // text or url string
 }
 
 type ModRequest struct {
 	ID        string  `json:"id"`        // MongoDB unique ID
-	ClientID  string  `json:"client_id"` // UUID
+	ClientID  string  `json:"client_id"` // UUID or "bot"
 	User      string  `json:"user"`
 	UserEmail string  `json:"user_email"`
 	Message   Message `json:"message"`
