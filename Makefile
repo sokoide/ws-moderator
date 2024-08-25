@@ -4,7 +4,7 @@ run: moderator
 	@echo "*****"
 	@echo "run 'make gui' first if you haven't done yet"
 	@echo "*****"
-	./moderator
+	./moderator -logLevel DEBUG
 
 moderator:
 	@echo building moderator...

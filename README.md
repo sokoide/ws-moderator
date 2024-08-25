@@ -27,3 +27,9 @@ make run
 
 * your app will run at `http://localhost`
 * mongo express runs at `http://localhost:8081`
+
+## Note
+
+* At the end of conversation, the history is saved as `$email.gob` in the current directory
+* When you resume the conversation as the same email, it'll be used
+* If it becomes big or fails for some reason, please delete the `$email.gob` and refresh the client browser to start a new conversation w/o a history
