@@ -28,11 +28,9 @@ const Navbar = () => {
                     {/* <MenuIcon /> */}
                 </IconButton>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Family Day Event 2024
+                    <Link href="/">Family Day Event 2024</Link>
                 </Typography>
                 <div className="links">
-                    <Link href="/">Chat</Link>
-                    &nbsp;
                     <div className="user">
                         {loginInfo?.loggedIn ? (
                             <Link href="/login">{loginInfo.email}</Link>
