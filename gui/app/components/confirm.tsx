@@ -43,12 +43,13 @@ const Confirm = () => {
         if (contentRef.current) {
             const element = contentRef.current;
             const options = {
-                margin: [0.5, 0.5],
+                margin: [20, 15],
                 filename: filepath,
+                image: { type: "jpeg", quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: {
-                    unit: "in",
-                    format: "A4",
+                    unit: "mm",
+                    format: "a4",
                     orientation: "portrait",
                 },
             };
@@ -98,6 +99,9 @@ const Confirm = () => {
     };
 
     const onComplete = async () => {
+        // This is more beautiful, but can't automate
+        // window.print();
+
         // PDF
         const invalidChars = /[\/:*?"<>|\\]/g;
 

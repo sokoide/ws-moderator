@@ -1,0 +1,26 @@
+/* Prevent breaking within paragraphs */
+p,
+div,
+h1,
+h2,
+h3 {
+    page-break-inside: avoid;
+}
+
+/* Force a page break before the element */
+.page-break {
+    page-break-before: always;
+}
+
+/* Force a page break after the element */
+.page-break-after {
+    page-break-after: always;
+}
+
+/* Adjust spacing and margins */
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+}
