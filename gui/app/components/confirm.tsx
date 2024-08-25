@@ -44,9 +44,16 @@ const Confirm = () => {
             const element = contentRef.current;
             const options = {
                 margin: [20, 15],
+                pagebreak: { mode: ["css"] },
                 filename: filepath,
                 image: { type: "jpeg", quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: {
+                    useCORS: true,
+                    ignoreElements: (element) => {
+                        // Customize this function to ignore elements based on conditions
+                        return element.classList.contains("ignore-pdf");
+                    },
+                },
                 jsPDF: {
                     unit: "mm",
                     format: "a4",
@@ -225,7 +232,7 @@ const Confirm = () => {
                         >
                             <ImageBox msg={msg} cn="" />
                         </Box>
-                        {/* <div className="page-break"></div> */}
+                        <div className="page-break"></div>
                         {/* <div style={{ pageBreakBefore: "always" }}></div> */}
                         <Box p={2}
                             sx={{
@@ -238,6 +245,7 @@ const Confirm = () => {
                     </Box>
                 </Box>
                 <Box
+                    className="ignore-pdf"
                     display="flex"
                     gap={2}
                     justifyContent="center"
