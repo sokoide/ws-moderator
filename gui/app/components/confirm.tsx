@@ -10,10 +10,11 @@ import { useRouter } from "next/navigation";
 import Divider from "@mui/material/Divider";
 import html2pdf from "html2pdf.js";
 
-
 const Confirm = () => {
     const router = useRouter();
-    const restUrl = process.env.NEXT_PUBLIC_MESSAGE_REST ?? "undefined";
+    const messageUrl = process.env.NEXT_PUBLIC_MESSAGE_REST ?? "undefined";
+    const completionUrl =
+        process.env.NEXT_PUBLIC_COMPLETION_REST ?? "undefined";
 
     const sp = useSearchParams();
     const msgid_txt = sp.get("msgid_txt");
@@ -70,9 +71,34 @@ const Confirm = () => {
         }
     };
 
-    const onComplete = () => {
-        // TODO: register it in mongodb
+    const registerInMongoDB = async () : Promise<boolean> => {
+        console.log("registerInMongoDB");
 
+        let params: string =
+            "?msgid_txt=" +
+            encodeURIComponent(msgid_txt ?? "") +
+            "&msgid_url=" +
+            encodeURIComponent(msgid_url ?? "") +
+            "&email=" +
+            encodeURIComponent(email ?? "") +
+            "&title=" +
+            encodeURIComponent(title ?? "") +
+            "&user=" +
+            encodeURIComponent(user ?? "") +
+            "&employee=" +
+            encodeURIComponent(employee ?? "");
+        const encoded_url = completionUrl + params;
+        console.log(encoded_url);
+
+        const response = await fetch(encoded_url);
+        if (!response.ok) {
+            console.error("failed to fetch %O", encoded_url);
+            return false;
+        }
+        return true;
+    };
+
+    const onComplete = async () => {
         // PDF
         const invalidChars = /[\/:*?"<>|\\]/g;
 
@@ -81,18 +107,24 @@ const Confirm = () => {
 
         // send email
         openEmailClient();
+
+        // register it in mongodb
+        const mongoResult : boolean = await registerInMongoDB();
+        if (!mongoResult) {
+            alert("Failed to register the completion record. Please try again");
+        }
     };
 
     useEffect(() => {
         // get msg
-        fetch(restUrl + "?msgid=" + msgid_txt)
+        fetch(messageUrl + "?msgid=" + msgid_txt)
             .then((res) => res.text())
             .then((data) => {
                 setText(data);
             })
             .catch((error) => console.error("Error fetching data:", error));
         // get url
-        fetch(restUrl + "?msgid=" + msgid_url)
+        fetch(messageUrl + "?msgid=" + msgid_url)
             .then((res) => res.text())
             .then((data) => {
                 setUrl(data);

@@ -72,6 +72,7 @@ func withCORS(next http.Handler) http.Handler {
 	})
 }
 
+// /go/messages
 func getMessageHandler(w http.ResponseWriter, r *http.Request) {
 	msgid := r.URL.Query().Get("msgid")
 	req := loadRequestsForMsgID(msgid)
@@ -84,6 +85,25 @@ func getMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintln(w, req.Message.Data)
+}
+
+// /go/completion
+func completionHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Query().Get("title")
+	user := r.URL.Query().Get("user")
+	employee := r.URL.Query().Get("employee")
+	email := r.URL.Query().Get("email")
+	textID := r.URL.Query().Get("msgid_txt")
+	imageID := r.URL.Query().Get("msgid_url")
+
+	err := storeCompletion(title, user, employee, email, textID, imageID)
+	if err != nil {
+		log.Errorf("Failed to store completion for %s", email)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func startModerator() {
@@ -119,6 +139,9 @@ func startModerator() {
 
 	// get message
 	http.Handle("/go/message", withCORS(http.HandlerFunc(getMessageHandler)))
+
+	// completion
+	http.Handle("/go/completion", withCORS(http.HandlerFunc(completionHandler)))
 
 	// moderator websocket
 	http.HandleFunc("/go/moderator", func(writer http.ResponseWriter, request *http.Request) {
