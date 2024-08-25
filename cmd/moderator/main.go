@@ -72,6 +72,20 @@ func withCORS(next http.Handler) http.Handler {
 	})
 }
 
+func getMessageHandler(w http.ResponseWriter, r *http.Request) {
+	msgid := r.URL.Query().Get("msgid")
+	req := loadRequestsForMsgID(msgid)
+
+	if req == nil {
+		log.Errorf("Failed to get document for msgid=%s", msgid)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprintln(w, req.Message.Data)
+}
+
 func startModerator() {
 	log.Info("Starting WebSocket Moderator Server...")
 
@@ -102,6 +116,9 @@ func startModerator() {
 	http.Handle("/images/", withCORS(imageHandler))
 
 	log.Infof("http://%s/images is open for images, serving from %s", o.imageHostIPAddr, staticImageDirFull)
+
+	// get message
+	http.Handle("/go/message", withCORS(http.HandlerFunc(getMessageHandler)))
 
 	// moderator websocket
 	http.HandleFunc("/go/moderator", func(writer http.ResponseWriter, request *http.Request) {

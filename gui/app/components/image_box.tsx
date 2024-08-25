@@ -18,11 +18,10 @@ const ImageBox: React.FC<MessageProps> = ({ msg }) => {
     return (
         <>
             <div className="zoom">
-                <p>{msg.message.data}</p>
                 <div className="zoom">
                     <img
                         src={imageUrl}
-                        alt="image"
+                        alt="{msg.message.data}"
                         style={{
                             objectFit: "contain",
                             transition: "all 0.3s ease",

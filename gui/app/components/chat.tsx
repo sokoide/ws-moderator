@@ -15,8 +15,10 @@ import MessageBox from "./messagebox";
 import { ModRequest } from "./types";
 import ClientUtil from "./client_util";
 import { v4 as uuid } from "uuid";
+import { useRouter } from "next/navigation";
 
 const Chat = () => {
+    const router = useRouter();
     const context = useContext(AppContext);
     if (context === null) {
         console.error("context not available");
@@ -122,6 +124,7 @@ const Chat = () => {
         let id_url_count: number = 0;
         let id_txt: string = "";
         let id_url: string = "";
+        let email: string = "";
 
         checkboxStates.map(({ msg, checked }) => {
             console.log("* %O:%O -> %O", msg.id, msg.message.kind, checked);
@@ -129,9 +132,10 @@ const Chat = () => {
                 if (msg.message.kind === "txt") {
                     id_txt_count++;
                     id_txt = msg.id;
+                    email = msg.user_email;
                 } else if (msg.message.kind === "url") {
                     id_url_count++;
-                    id_url = msg.user_email;
+                    id_url = msg.id;
                 }
             }
         });
@@ -144,7 +148,9 @@ const Chat = () => {
             return;
         }
 
-        // TODO: complete
+        // todo: URL encode
+        let target_page: string = "/confirm?msgid_txt=" + id_txt + "&msgid_url=" + id_url + "&email=" + email;
+        router.push(target_page);
     };
 
     const onUncheckAll = () => {
@@ -183,6 +189,9 @@ const Chat = () => {
     return (
         <div>
             <Box
+                my={4}
+                mx={4}
+                width="100%"
                 sx={{
                     display: "flex",
                     flexDirection: "column",
@@ -191,12 +200,6 @@ const Chat = () => {
             >
                 <Box
                     ref={messagePaneRef}
-                    sx={{
-                        height: "85%",
-                        padding: 2,
-                        overflowY: "auto",
-                        overflowX: "auto",
-                    }}
                 >
                     {checkboxStates.map(({ msg, checked }) => (
                         <MessageBox
@@ -208,7 +211,12 @@ const Chat = () => {
                     ))}
                 </Box>
 
-                <Box className="message-input" display="flex" flexDirection="row" gap={1}>
+                <Box
+                    className="message-input"
+                    display="flex"
+                    flexDirection="row"
+                    gap={1}
+                >
                     <textarea
                         ref={taRef}
                         value={inputValue}
@@ -221,11 +229,10 @@ const Chat = () => {
                         Ask
                     </Button>
                 </Box>
-                <Box display="flex" gap={2} justifyContent="center" padding={2}>
+                <Box display="flex" justifyContent="center" p={2} gap={4} className="message-input">
                     <Button variant="contained" onClick={onUncheckAll}>
                         Uncheck All
                     </Button>
-                    &nbsp;
                     <Button variant="contained" onClick={onComplete}>
                         Complete
                     </Button>

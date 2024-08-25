@@ -1,12 +1,15 @@
-import Image from "next/image";
-import Chat from "./components/chat"
+"use client";
+import Chat from "./components/chat";
+import { useRouter } from "next/navigation";
 
 const HomePage = () => {
-  return (
-    <>
-    <Chat/>
-    </>
-  );
+    const router = useRouter();
+
+    return (
+        <>
+            <Chat />
+        </>
+    );
 };
 
 export default HomePage;

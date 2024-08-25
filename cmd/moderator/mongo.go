@@ -143,6 +143,29 @@ func loadRequestsForUserEmail(userEmail string) []ModRequest {
 	return requests
 }
 
+func loadRequestsForMsgID(msgid string) *ModRequest {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	collection := client.Database(MONGODB_NAME).Collection(MONGODB_COLLECTION)
+
+	// get the doc
+	var result MongoRequest
+
+	objectID, err := primitive.ObjectIDFromHex(msgid)
+	filter := bson.D{{"_id", objectID}}
+
+	err = collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		log.Errorf("Failed to get the updated document %s, %v", msgid, err)
+		return nil
+	}
+	log.Debugf("Document found: %v", result)
+
+	modRequest := newModRequest(result.ID.Hex(), result.ClientID, result.UserEmail, result.MessageKind, result.MessageData, result.Approved, result.Moderated)
+	return modRequest
+}
+
 func loadRequests(moderated bool) []ModRequest {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

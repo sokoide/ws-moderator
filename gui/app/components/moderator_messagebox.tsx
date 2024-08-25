@@ -99,6 +99,8 @@ const ModeratorMessageBox: React.FC<ModerateButtonsProps> = ({
                 <Box
                     whiteSpace="pre-line"
                     my={0}
+                    mx={4}
+                    width="100%"
                     display="flex"
                     gap={2}
                     p={2}
