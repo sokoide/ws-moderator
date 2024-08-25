@@ -3,12 +3,12 @@
 import "./messagebox.css";
 import React, { useEffect, useState, useRef, ChangeEvent } from "react";
 import ImageBox from "./image_box";
-import { Message, ModRequest } from "./types";
-import Box from "@mui/material/Box";
-import Checkbox from "@mui/material/Checkbox";
-import Divider from "@mui/material/Divider";
+import { ModRequest } from "./types";
+import { Box, Checkbox, Divider, IconButton } from "@mui/material";
 import RobotIcon from "@mui/icons-material/SmartToy";
 import UserIcon from "@mui/icons-material/Person";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { Content } from "next/font/google";
 
 interface MessageProps {
     msg: ModRequest;
@@ -34,6 +34,17 @@ const MessageBox: React.FC<MessageProps> = ({
         );
     };
 
+    const handleCopy = () => {
+        navigator.clipboard
+            .writeText(msg.message.data)
+            .then(() => {
+                alert("Content copied to clipboard!");
+            })
+            .catch((err) => {
+                console.error("Failed to copy: ", err);
+            });
+    };
+
     return (
         <>
             <div className="zoom">
@@ -50,24 +61,34 @@ const MessageBox: React.FC<MessageProps> = ({
                     }}
                 >
                     {msg.client_id === "bot" ? (
-                        <Checkbox checked={checked} onChange={onCheckboxChange} />
+                        <Checkbox
+                            checked={checked}
+                            onChange={onCheckboxChange}
+                        />
                     ) : (
                         ""
                     )}
                     {msg.client_id !== "bot" ? <UserIcon /> : <RobotIcon />}
-                    <Box display="flex" flexDirection="column">
+                    <Box display="flex" flexDirection="column" width={"100%"}>
                         {msg.message.kind === "url" ? (
-                            <ImageBox msg={msg} cn="zoom"/>
+                            <ImageBox msg={msg} cn="zoom" />
                         ) : (
                             <div className="box">
                                 <p>{getHighlightedText(msg.message.data)}</p>
                             </div>
                         )}
                         <Divider />
-                        <Box sx={{ color: "lightgrey" }}>
+                        <Box sx={{color: "lightgrey"}} display="flex" flexDirection="row" justifyContent="space-between">
                             <p>
                                 msgid: {msg.id}, kind: {msg.message.kind}
                             </p>
+                            <IconButton
+                                color="primary"
+                                onClick={handleCopy}
+                                sx={{ marginLeft: 2 }}
+                            >
+                                <ContentCopyIcon />
+                            </IconButton>
                         </Box>
                     </Box>
                 </Box>
