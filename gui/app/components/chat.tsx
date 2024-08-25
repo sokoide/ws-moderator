@@ -31,9 +31,9 @@ const Chat = () => {
     const [messages, setMessages] = useState<ModRequest[]>([]);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const eopRef = useRef<HTMLDivElement | null>(null);
-    const titleRef = useRef<HTMLInputElement>("");
-    const userRef = useRef<HTMLInputElement>("");
-    const employeeRef = useRef<HTMLInputElement>("");
+    const titleRef = useRef<HTMLInputElement | null>(null);
+    const userRef = useRef<HTMLInputElement | null>(null);
+    const employeeRef = useRef<HTMLInputElement | null>(null);
 
     if (loginInfo != null && loginInfo.loggedIn === false) {
         if (typeof window !== "undefined") window.location.href = "/login";

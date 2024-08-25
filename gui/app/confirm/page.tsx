@@ -9,15 +9,16 @@ import Button from "@mui/material/Button";
 import { useRouter } from "next/navigation";
 import Divider from "@mui/material/Divider";
 import html2pdf from "html2pdf.js";
-import jsPDF from "jspdf";
+
+// import dynamic from "next/dynamic";
 
 const ConfirmPage = () => {
     const router = useRouter();
     const restUrl = process.env.NEXT_PUBLIC_MESSAGE_REST ?? "undefined";
+
     const sp = useSearchParams();
     const msgid_txt = sp.get("msgid_txt");
     const msgid_url = sp.get("msgid_url");
-
     const title = sp.get("title");
     const user = sp.get("user");
     const employee = sp.get("employee");
@@ -26,7 +27,12 @@ const ConfirmPage = () => {
     const [text, setText] = useState<string>("");
     const [url, setUrl] = useState<string>("");
     const [msg, setMsg] = useState<ModRequest>({
+        id: "",
+        client_id: "",
+        user_email: "",
         message: { kind: "url", data: "TBD" },
+        approved: false,
+        moderated: false,
     });
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +46,7 @@ const ConfirmPage = () => {
             const options = {
                 margin: [0.5, 0.5],
                 filename: filepath,
-                html2canvas: { scale: 2, useCORS: true, },
+                html2canvas: { scale: 2, useCORS: true },
                 jsPDF: {
                     unit: "in",
                     format: "A4",
@@ -60,7 +66,9 @@ const ConfirmPage = () => {
             subject
         )}&body=${encodeURIComponent(body)}`;
 
-        window.location.href = mailtoLink;
+        if (typeof window !== "undefined") {
+            window.location.href = mailtoLink;
+        }
     };
 
     const onComplete = () => {
@@ -90,10 +98,15 @@ const ConfirmPage = () => {
             .then((data) => {
                 setUrl(data);
                 setMsg({
+                    id: "",
+                    client_id: "",
+                    user_email: "",
                     message: {
                         kind: "url",
                         data: data,
                     },
+                    approved: false,
+                    moderated: false,
                 });
             })
             .catch((error) => console.error("Error fetching data:", error));
@@ -133,7 +146,7 @@ const ConfirmPage = () => {
                             </p>
                         </Box>
                         <Box p={2}>
-                            <ImageBox msg={msg} />
+                            <ImageBox msg={msg} cn="" />
                         </Box>
                         <Divider />
                         <Box p={2}>
