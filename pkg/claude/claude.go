@@ -2,6 +2,7 @@ package claude
 
 import (
 	"bytes"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"sync/atomic"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // types
@@ -104,19 +107,70 @@ func callClaudeAPI(apiKey string, model string, history *[]ClaudeMessage) (strin
 	return "", fmt.Errorf("no content in response")
 }
 
+func serializeHistory(id string, history []ClaudeMessage) error {
+	filepath := fmt.Sprintf("%s.gob", id)
+	file, err := os.Create(filepath)
+	if err != nil {
+		log.Errorf("Error creating file: %v", err)
+		return err
+	}
+	defer file.Close()
+
+	// Create a new encoder
+	encoder := gob.NewEncoder(file)
+	if err := encoder.Encode(history); err != nil {
+		log.Errorf("Error encoding GOB: %v", err)
+		return err
+	}
+
+	log.Infof("Serialization of %s succeeded", filepath)
+	return nil
+}
+
+func deserializeHistory(id string) []ClaudeMessage {
+	var history []ClaudeMessage
+
+	filepath := fmt.Sprintf("%s.gob", id)
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Errorf("Error opening file:", err)
+		return history
+	}
+	defer file.Close()
+
+	// Create a new decoder
+	decoder := gob.NewDecoder(file)
+
+	// Decode the data into the variable
+	if err := decoder.Decode(&history); err != nil {
+		log.Errorf("Error decoding GOB:", err)
+		return history
+	}
+
+	log.Infof("Deserialization of %s succeeded", filepath)
+	return history
+}
+
 // id is an email
 func StartConversation(id string, cin chan Request, cout chan Response) {
 	fmt.Printf("Starting ID:%s\n", id)
 	model := "claude-3-5-sonnet-20240620"
-	// TODO: store history in mongodb
 	var history []ClaudeMessage
 	atomic.AddInt32(&claudeConns, 1)
 	defer atomic.AddInt32(&claudeConns, -1)
+
+	history = deserializeHistory(id)
 
 	for {
 		req, ok := <-cin
 		if !ok {
 			fmt.Printf("ID:%s channel closed, exiting\n", id)
+			err := serializeHistory(id, history)
+			if err == nil {
+				log.Info("serialization succeeded")
+			} else {
+				log.Errorf("serialization failed. %v", err)
+			}
 			return
 		}
 
