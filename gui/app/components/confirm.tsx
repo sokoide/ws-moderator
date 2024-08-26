@@ -49,7 +49,7 @@ const Confirm = () => {
                 image: { type: "jpeg", quality: 0.98 },
                 html2canvas: {
                     useCORS: true,
-                    ignoreElements: (element) => {
+                    ignoreElements: (element: HTMLElement) => {
                         // Customize this function to ignore elements based on conditions
                         return element.classList.contains("ignore-pdf");
                     },
