@@ -459,7 +459,7 @@ func startModerator() {
 				} else {
 					log.Errorf("[%s] failed to receive from AI %v", clientID, res)
 					storeRequest("bot", req.UserEmail,
-						"Failed to get an answer from AI. Please retry.",
+						fmt.Sprintf("Failed to get an answer from AI. %v.", res.Text),
 						"txt", true, true)
 				}
 			}

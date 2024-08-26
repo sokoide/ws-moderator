@@ -186,7 +186,7 @@ func StartConversation(id string, cin chan Request, cout chan Response) {
 		response, err := callClaudeAPI(apiKey, model, &history)
 		if err != nil {
 			fmt.Printf("ID:%s error calling Claude API: %v\n", id, err)
-			cout <- Response{Succeeded: false, Text: ""}
+			cout <- Response{Succeeded: false, Text: fmt.Sprintf("err: %v", err)}
 		}
 
 		cout <- Response{Succeeded: true, Text: response}
