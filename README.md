@@ -1,5 +1,9 @@
 # ws-moderator
 
+## Prereq
+
+* Download Not Sans JP Regular and Bold from <https://fonts.google.com/noto/specimen/Noto+Sans+JP> into the repo root
+
 ## How to build
 
 * install npm, go, podman/docker, podman-compose/docker-compose

@@ -43,8 +43,10 @@ const Confirm = () => {
         if (contentRef.current) {
             const element = contentRef.current;
             const options = {
-                margin: [20, 15],
-                pagebreak: { mode: ["css"] },
+                // margin: [17, 15], // top-bottom, left-right (mm), bad config
+                // margin: [20, 10], // top-bottom, left-right (mm), bad config
+                margin: [20, 15], // top-bottom, left-right (mm)
+                pagebreak: { mode: ["avoid-all"], before: ".page-break" },
                 filename: filepath,
                 image: { type: "jpeg", quality: 0.98 },
                 html2canvas: {
@@ -233,7 +235,6 @@ const Confirm = () => {
                             <ImageBox msg={msg} cn="" />
                         </Box>
                         <div className="page-break"></div>
-                        {/* <div style={{ pageBreakBefore: "always" }}></div> */}
                         <Box p={2}
                             sx={{
                                 gap: 2,
