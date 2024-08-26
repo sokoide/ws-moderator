@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -15,6 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/sokoide/ws-ai/pkg/claude"
 	"github.com/sokoide/ws-ai/pkg/dalle"
+	"github.com/sokoide/ws-ai/pkg/pdf"
 )
 
 // types
@@ -40,6 +44,8 @@ var o options = options{
 var db Database = Database{}
 
 var claudes sync.Map
+
+const staticImageDir = "images"
 
 // functions
 func parseArgs() {
@@ -87,6 +93,89 @@ func getMessageHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, req.Message.Data)
 }
 
+// /go/pdf
+func pdfHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Query().Get("title")
+	user := r.URL.Query().Get("user")
+	// email := r.URL.Query().Get("email")
+	textID := r.URL.Query().Get("msgid_txt")
+	imageID := r.URL.Query().Get("msgid_url")
+
+	req := loadRequestsForMsgID(textID)
+	if req == nil {
+		log.Errorf("Failed to get document for textID=%s", textID)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	longText := req.Message.Data
+
+	req = loadRequestsForMsgID(imageID)
+	if req == nil {
+		log.Errorf("Failed to get document for imageID=%s", imageID)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	comps := strings.Split(req.Message.Data, "/")
+	if len(comps) < 2 {
+		log.Errorf("Wrong image URL %s for imageID=%s", req.Message.Data, imageID)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	emailDir := comps[len(comps)-2]
+	imageFile := comps[len(comps)-1]
+	staticImageDirFull, _ := filepath.Abs(staticImageDir)
+	imagePath := path.Join(staticImageDirFull, emailDir, imageFile)
+
+	log.Debugf("using image %s", imagePath)
+	fileName := emailDir + ".pdf"
+	outputPath := path.Join(staticImageDirFull, emailDir, fileName)
+	log.Debugf("outputPath %s", outputPath)
+
+	err := pdf.GeneratePdf(title, "Family Day 2024", imagePath, user, longText, outputPath)
+	if err != nil {
+		log.Errorf("Failed to generate a PDF. err: %v", err)
+		http.Error(w, "Failed o generate a PDF", http.StatusInternalServerError)
+		return
+	}
+
+	// Get file info to determine the size
+	fileInfo, err := os.Stat(outputPath)
+	if err != nil {
+		log.Errorf("Failed to stat the generated PDF file %s. err: %v", outputPath, err)
+		http.Error(w, "Failed to stat the generated PDF file", http.StatusInternalServerError)
+		return
+	}
+
+	// Open the file
+	file, err := os.Open(outputPath)
+	if err != nil {
+		log.Errorf("Generated PDF file %s not found. err: %v", outputPath, err)
+		http.Error(w, "Generated PDF file not found", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	// Set headers
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
+	w.Header().Set("Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
+
+	// Copy the file content to the response
+	_, err = file.Seek(0, 0) // Reset file pointer to the start
+	if err != nil {
+		log.Errorf("Failed to seek file. err: %v", outputPath, err)
+		http.Error(w, "Failed to seek file", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = io.Copy(w, file) // Copy file content to response
+	if err != nil {
+		log.Errorf("Failed to serve file. err: %v", outputPath, err)
+		http.Error(w, "Failed to serve file", http.StatusInternalServerError)
+	}
+}
+
 // /go/completion
 func completionHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Query().Get("title")
@@ -126,7 +215,6 @@ func startModerator() {
 	log.Infof("http://%s/ is open for browsers, serving from %s", o.imageHostIPAddr, staticDirFull)
 
 	// "/images" for images
-	staticImageDir := "images"
 	staticImageDirFull, _ := filepath.Abs(staticImageDir)
 
 	fsImage := http.FileServer(http.Dir(staticImageDir))
@@ -139,6 +227,9 @@ func startModerator() {
 
 	// get message
 	http.Handle("/go/message", withCORS(http.HandlerFunc(getMessageHandler)))
+
+	// pdf generation
+	http.Handle("/go/pdf", withCORS(http.HandlerFunc(pdfHandler)))
 
 	// completion
 	http.Handle("/go/completion", withCORS(http.HandlerFunc(completionHandler)))

@@ -20,7 +20,7 @@ const fontFamily = "NotSansJP"
 const regularFont = "NotoSansJP-Regular.ttf"
 const boldFont = "NotoSansJP-Bold.ttf"
 
-func GeneratePdf(title string, header string, imagePath string, user string, longText string, outputFile string) {
+func GeneratePdf(title string, header string, imagePath string, user string, longText string, outputFile string) error {
 	var y float64 = 10
 
 	pdfObj := gofpdf.New("P", "mm", "A4", "")
@@ -85,7 +85,5 @@ func GeneratePdf(title string, header string, imagePath string, user string, lon
 	// --- Save the file
 	err := pdfObj.OutputFileAndClose(outputFile)
 
-	if err != nil {
-		panic(err)
-	}
+	return err
 }

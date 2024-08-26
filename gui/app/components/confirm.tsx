@@ -14,6 +14,8 @@ const Confirm = () => {
     const messageUrl = process.env.NEXT_PUBLIC_MESSAGE_REST ?? "undefined";
     const completionUrl =
         process.env.NEXT_PUBLIC_COMPLETION_REST ?? "undefined";
+    const pdfUrl =
+        process.env.NEXT_PUBLIC_PDF_REST ?? "undefined";
 
     const sp = useSearchParams();
     const msgid_txt = sp.get("msgid_txt");
@@ -39,6 +41,7 @@ const Confirm = () => {
         router.push("/");
     };
 
+    // not used
     const handleSaveAsPDF = (filepath: string) => {
         if (contentRef.current) {
             const element = contentRef.current;
@@ -107,6 +110,52 @@ const Confirm = () => {
         return true;
     };
 
+    const downloadPDF = async (): Promise<boolean> => {
+        console.log("downloadPDF");
+
+        let params: string =
+            "?msgid_txt=" +
+            encodeURIComponent(msgid_txt ?? "") +
+            "&msgid_url=" +
+            encodeURIComponent(msgid_url ?? "") +
+            "&email=" +
+            encodeURIComponent(email ?? "") +
+            "&title=" +
+            encodeURIComponent(title ?? "") +
+            "&user=" +
+            encodeURIComponent(user ?? "");
+
+        const encoded_url = pdfUrl + params;
+        console.log("* downloading %O", encoded_url);
+
+        try {
+            const response = await fetch(encoded_url, {
+                method: "GET",
+                headers: {
+                    Accept: "application/octet-stream",
+                },
+            });
+            if (!response.ok) {
+                console.error("failed to fetch %O", encoded_url);
+                return false;
+            }
+
+            // Convert response to a Blob and create a download link
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = email + ".pdf";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            return true;
+        } catch (error) {
+            console.error("There was an error downloading the file:", error);
+            return false;
+        }
+    };
+
     const onComplete = async () => {
         // This is more beautiful, but can't automate
         // window.print();
@@ -114,8 +163,17 @@ const Confirm = () => {
         // PDF
         const invalidChars = /[\/:*?"<>|\\]/g;
 
-        const filename = (email + "_" + title).replace(invalidChars, "_");
-        handleSaveAsPDF(`${filename}.pdf`);
+        // This generates a PDF only by Javascript, but characters can be
+        // torn up and down between pages.
+        // const filename = (email + "_" + title).replace(invalidChars, "_");
+        // handleSaveAsPDF(`${filename}.pdf`);
+
+        // generate PDF
+        const pdfResult: boolean = await downloadPDF();
+        if (!pdfResult) {
+            alert("Failed to download a PDF. Please try again");
+            return;
+        }
 
         // send email
         openEmailClient();
@@ -235,7 +293,8 @@ const Confirm = () => {
                             <ImageBox msg={msg} cn="" />
                         </Box>
                         <div className="page-break"></div>
-                        <Box p={2}
+                        <Box
+                            p={2}
                             sx={{
                                 gap: 2,
                                 display: "flex",
