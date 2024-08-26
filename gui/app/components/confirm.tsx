@@ -240,10 +240,11 @@ const Confirm = () => {
                             }}
                         >
                             <Typography
-                                variant="h2"
-                                sx={{ fontSize: "1.5rem" }}
+                                variant="h3"
+                                color="lightgray"
+                                sx={{ fontSize: "1rem" }}
                             >
-                                *** confirmation ***
+                                [ Please review, scroll down to the bottom and generate a PDF ]
                             </Typography>
                         </Box>
 
@@ -296,7 +297,7 @@ const Confirm = () => {
                                 justifyContent: "flex-end",
                             }}
                         >
-                            Employee Email: <b>{email}</b>
+                            Employee Personal Email: <b>{email}</b>
                         </Box>
                         <Box
                             p={1}

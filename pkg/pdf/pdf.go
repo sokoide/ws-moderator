@@ -1,6 +1,6 @@
 package pdf
 
-import "github.com/jung-kurt/gofpdf"
+import "github.com/jung-kurt/gofpdf/v2"
 
 func drawCenter(pdfObj *gofpdf.Fpdf, str string) {
 	// Get the width of the page
@@ -28,7 +28,7 @@ func GeneratePdf(title string, header string, imagePath string, user string, lon
 	pdfObj.AddUTF8Font(fontFamily, "B", boldFont)
 
 	// Set margins: left, top, and right (in millimeters)
-	pdfObj.SetMargins(20, 20, 20)
+	pdfObj.SetMargins(10, 20, 10)
 
 	// Add a new page
 	pdfObj.AddPage()
@@ -80,7 +80,8 @@ func GeneratePdf(title string, header string, imagePath string, user string, lon
 	pdfObj.AddPage()
 	y = 10
 	pdfObj.SetFont(fontFamily, "", 14)
-	pdfObj.MultiCell(0, y, longText, "", "", false)
+	//pdfObj.MultiCell(0, y, longText, "", "L", false)
+	pdfObj.MultiCell(0, y, longText, "", "J", false)
 
 	// --- Save the file
 	err := pdfObj.OutputFileAndClose(outputFile)
