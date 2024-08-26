@@ -426,7 +426,7 @@ func startModerator() {
 					}
 				} else {
 					log.Errorf("[%s] Failed to generate an image: %v", clientID, err)
-					storeRequest("bot", req.UserEmail, "Failed to get an answer from AI. Please retry.", "txt", true, true)
+					storeRequest("bot", req.UserEmail, fmt.Sprintf("Failed to get an answer from AI. %v", err), "txt", true, true)
 				}
 			} else {
 				// Text generation

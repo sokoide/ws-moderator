@@ -14,8 +14,7 @@ const Confirm = () => {
     const messageUrl = process.env.NEXT_PUBLIC_MESSAGE_REST ?? "undefined";
     const completionUrl =
         process.env.NEXT_PUBLIC_COMPLETION_REST ?? "undefined";
-    const pdfUrl =
-        process.env.NEXT_PUBLIC_PDF_REST ?? "undefined";
+    const pdfUrl = process.env.NEXT_PUBLIC_PDF_REST ?? "undefined";
 
     const sp = useSearchParams();
     const msgid_txt = sp.get("msgid_txt");
@@ -232,6 +231,23 @@ const Confirm = () => {
                 >
                     <Box>
                         <Box
+                            p={1}
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                textAlign: "center",
+                            }}
+                        >
+                            <Typography
+                                variant="h2"
+                                sx={{ fontSize: "1.5rem" }}
+                            >
+                                *** confirmation ***
+                            </Typography>
+                        </Box>
+
+                        <Box
                             p={2}
                             sx={{
                                 display: "flex",
@@ -245,6 +261,7 @@ const Confirm = () => {
                             </Typography>
                         </Box>
                         <Divider />
+
                         <Box
                             p={1}
                             sx={{
@@ -317,7 +334,7 @@ const Confirm = () => {
                     </Button>
                     &nbsp;
                     <Button variant="contained" onClick={onComplete}>
-                        Send E-mail and Complete
+                        Generate PDF and Send E-mail
                     </Button>
                 </Box>
             </div>

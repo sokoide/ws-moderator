@@ -309,7 +309,7 @@ const Chat = () => {
                             Uncheck All
                         </Button>
                         <Button variant="outlined" onClick={onComplete}>
-                            Review and Complete
+                            Generate PDF
                         </Button>
                     </Box>
                 </Box>
