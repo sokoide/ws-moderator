@@ -1,5 +1,3 @@
-"use client";
-
 import "./moderator.css";
 import React, {
     useContext,
@@ -88,7 +86,6 @@ const Moderator = () => {
         logEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [logs]);
 
-
     const formatMessage = (msg: ModRequest) : string => {
         return `${msg.user_email} | ${msg.message.kind} | aprv:${msg.approved} | mdrt:${msg.moderated} | ${msg.message.data.slice(0, 256)}`
     }
@@ -97,7 +94,7 @@ const Moderator = () => {
         var msg: string
         if (add_timestamp === true) {
             msg = `${new Date().toLocaleTimeString()}: ${message}`;
-        }else {
+        } else {
             msg = message;
         }
         setLogs((prevLogs) => {
@@ -139,12 +136,13 @@ const Moderator = () => {
     };
 
     return (
-        <div>
+        <div style={{ width: '100%' }}> {/* Added full width */}
             <Box
                 sx={{
                     display: "flex",
                     flexDirection: "column",
                     height: "60vh",
+                    width: "100%",  // Ensure the Box uses the full width
                 }}
             >
                 <Box
@@ -174,7 +172,7 @@ const Moderator = () => {
                     height: "33vh",
                     overflowY: "auto",
                     padding: 2,
-                    // backgroundColor: "#1e1e1e",
+                    width: '100%',  // Ensure the log monitor uses the full width
                     backgroundColor: "black",
                     color: "green",
                     borderRadius: "4px",
