@@ -2,6 +2,8 @@ package pdf
 
 import (
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/signintech/gopdf"
@@ -10,6 +12,127 @@ import (
 const fontFamily = "NotoSansJP"
 const regularFont = "NotoSansJP-Regular.ttf"
 const boldFont = "NotoSansJP-Bold.ttf"
+
+// var re = regexp.MustCompile(`^[A-Za-z\s\-–’‘“”()[]{}.,!?;:'"]*$`)
+
+func isAllEnglish(text string) bool {
+	// check the first 100 chars
+	target := text[:100]
+	nonEnglishChars := 0
+
+	for _, char := range target {
+		if char > unicode.MaxASCII && char != '–' {
+			nonEnglishChars++
+		}
+	}
+
+	// if <10% is non English chars, assume they are symbols and return true
+	if nonEnglishChars < 10 {
+		return true
+	}
+	return false
+}
+
+func DrawLongText(isEnglish bool, pdfObj *gopdf.GoPdf, line string, x float64, y float64, lineHeight float64,
+	pageWidth float64, pageHeight float64,
+	marginX float64, marginY float64) (float64, float64) {
+	if isEnglish {
+		return DrawLongTextEnglish(pdfObj, line, x, y, lineHeight, pageWidth, pageHeight, marginX, marginY)
+	} else {
+		return DrawLongTextNonEnglish(pdfObj, line, x, y, lineHeight, pageWidth, pageHeight, marginX, marginY)
+	}
+}
+
+func DrawLongTextEnglish(pdfObj *gopdf.GoPdf, line string, x float64, y float64, lineHeight float64,
+	pageWidth float64, pageHeight float64,
+	marginX float64, marginY float64) (float64, float64) {
+	words := strings.Split(line, " ")
+	for _, word := range words {
+		wordWidth, err := pdfObj.MeasureTextWidth(word + " ")
+		if err != nil {
+			panic(err)
+		}
+
+		if x+wordWidth > pageWidth-marginX {
+			x = marginX
+			y += lineHeight
+		}
+
+		if y > pageHeight-marginY {
+			pdfObj.AddPage()
+			y = marginY
+		}
+
+		pdfObj.SetXY(x, y)
+		pdfObj.Text(word + " ")
+		x += wordWidth
+	}
+	// Move to next line after finishing current line
+	x = marginX
+	y += lineHeight
+
+	return x, y
+}
+
+func DrawLongTextNonEnglish(pdfObj *gopdf.GoPdf, line string, x float64, y float64, lineHeight float64,
+	pageWidth float64, pageHeight float64,
+	marginX float64, marginY float64) (float64, float64) {
+	if line == "" {
+		// Empty line, just move to next line
+		y += lineHeight
+	} else {
+		for _, r := range line {
+			char := string(r)
+			charWidth, err := pdfObj.MeasureTextWidth(char)
+			if err != nil {
+				panic(err)
+			}
+
+			if x+charWidth > pageWidth-marginX {
+				x = marginX
+				y += lineHeight
+			}
+
+			if y > pageHeight-marginY {
+				pdfObj.AddPage()
+				y = marginY
+			}
+
+			pdfObj.SetXY(x, y)
+			pdfObj.Text(char)
+			x += charWidth
+		}
+		x = marginX
+		y += lineHeight
+	}
+	return x, y
+}
+
+func SplitString(s string) (string, string) {
+	// Get the length of the string in runes (characters), not bytes
+	length := utf8.RuneCountInString(s)
+
+	// Find the split point
+	splitPoint := length / 2
+
+	// Iterate to find the exact rune boundary for the split point
+	var currentRuneIndex int
+	var splitIndex int
+
+	for i, _ := range s {
+		if currentRuneIndex == splitPoint {
+			splitIndex = i
+			break
+		}
+		currentRuneIndex++
+	}
+
+	// Split the string into two parts
+	firstPart := s[:splitIndex]
+	secondPart := s[splitIndex:]
+
+	return firstPart, secondPart
+}
 
 func GeneratePdf2(title string, header string, imagePath string, user string, longText string, outputFile string) error {
 	var marginX float64 = 50.0
@@ -42,18 +165,28 @@ func GeneratePdf2(title string, header string, imagePath string, user string, lo
 
 	// Get page dimensions
 	textWidth, _ := pdfObj.MeasureTextWidth(title)
-	x = (pageWidth - textWidth) / 2
-	pdfObj.SetXY(x, y)
 
-	// TODO: make it 2 lines if it's long
-	pdfObj.SetXY(x, y)
-	pdfObj.Cell(nil, title)
-	y += 40
+	if textWidth > pageWidth-marginX {
+		// make it 2 lines
+		title1, title2 := SplitString(title)
 
-	x = (pageWidth - textWidth) / 2
-	pdfObj.SetXY(x, y)
-	pdfObj.Cell(nil, title)
-	y += 40
+		textWidth, _ = pdfObj.MeasureTextWidth(title1)
+		x = (pageWidth - textWidth) / 2
+		pdfObj.SetXY(x, y)
+		pdfObj.Cell(nil, title1)
+		y += 40
+
+		textWidth, _ = pdfObj.MeasureTextWidth(title2)
+		x = (pageWidth - textWidth) / 2
+		pdfObj.SetXY(x, y)
+		pdfObj.Cell(nil, title2)
+		y += 40
+	} else {
+		x = (pageWidth - textWidth) / 2
+		pdfObj.SetXY(x, y)
+		pdfObj.Cell(nil, title)
+		y += 40
+	}
 	x = marginX
 
 	// --- Draw a horizontal line
@@ -92,38 +225,13 @@ func GeneratePdf2(title string, header string, imagePath string, user string, lo
 	pdfObj.SetFont(fontFamily, "", 14)
 	pdfObj.SetXY(x, y)
 
+	isEnglish := isAllEnglish(longText)
+	// fmt.Printf("isEnglish: %v\n", isEnglish)
 	lines := strings.Split(longText, "\n")
 	lineHeight := 20.0
 
 	for _, line := range lines {
-		if line == "" {
-			// Empty line, just move to next line
-			y += lineHeight
-		} else {
-			for _, r := range line {
-				char := string(r)
-				charWidth, err := pdfObj.MeasureTextWidth(char)
-				if err != nil {
-					panic(err)
-				}
-
-				if x+charWidth > pageWidth-marginX {
-					x = marginX
-					y += lineHeight
-				}
-
-				if y > pageHeight-marginY {
-					pdfObj.AddPage()
-					y = marginY
-				}
-
-				pdfObj.SetXY(x, y)
-				pdfObj.Text(char)
-				x += charWidth
-			}
-			x = marginX
-			y += lineHeight
-		}
+		x, y = DrawLongText(isEnglish, &pdfObj, line, x, y, lineHeight, pageWidth, pageHeight, marginX, marginY)
 	}
 
 	pdfObj.WritePdf(outputFile)

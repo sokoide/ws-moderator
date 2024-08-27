@@ -84,7 +84,12 @@ The dragon's laugh was like an avalanche. "Worry not, little one. We shall visit
 この物語は代々語り継がれ、青葉村の人々の心に刻まれました。そして、美咲の子孫たちもまた、龍守としての使命を受け継いでいくのでした。`
 
 	fmt.Println(len(longText), len(longTextJpn))
-	err := pdf.GeneratePdf2(title, header, imagePath, user, longTextJpn, outputFile)
+	err := pdf.GeneratePdf2(title, header, imagePath, user, longTextJpn, "J1"+outputFile)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = pdf.GeneratePdf2(title+"長い文字ほげホゲホゲ。。もっと長い文字", header, imagePath, user, longTextJpn, "J2"+outputFile)
 	if err != nil {
 		fmt.Println(err)
 	}
