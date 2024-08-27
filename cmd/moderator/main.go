@@ -132,7 +132,7 @@ func pdfHandler(w http.ResponseWriter, r *http.Request) {
 	outputPath := path.Join(staticImageDirFull, emailDir, fileName)
 	log.Debugf("outputPath %s", outputPath)
 
-	err := pdf.GeneratePdf(title, "Family Day 2024", imagePath, user, longText, outputPath)
+	err := pdf.GeneratePdf2(title, "Family Day 2024", imagePath, user, longText, outputPath)
 	if err != nil {
 		log.Errorf("Failed to generate a PDF. err: %v", err)
 		http.Error(w, "Failed o generate a PDF", http.StatusInternalServerError)
