@@ -256,7 +256,7 @@ const Chat = () => {
     return (
         <>
             <div ref={eopRef} className="container" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                <Box sx={{ flexGrow: 1, overflowY: "auto", paddingBottom: "10px" }}>
+                <Box p={2} sx={{ flexGrow: 1, overflowY: "auto", paddingBottom: "10px" }}>
                     <Box>
                         {checkboxStates.map(({ msg, checked }) => (
                             <MessageBox
@@ -273,6 +273,7 @@ const Chat = () => {
                 </Box>
                 <div ref={inputContainerRef} style={{ padding: "10px", borderTop: "1px solid #ccc", background: "#fff", flexShrink: 0 }}>
                     <Box display="flex" flexDirection="column" gap={1}>
+                        <Box display="flex" flexDirection="row" gap={1}>
                         <textarea
                             value={inputValue}
                             onChange={handleInputChange}
@@ -282,6 +283,10 @@ const Chat = () => {
                             className="bordered-input"
                             style={{ width: "100%", resize: "none" }}
                         />
+                            <Button variant="contained" onClick={onSend}>
+                                Ask
+                            </Button>
+                        </Box>
                         {showSuggestion && suggestion && (
                             <Box
                                 p={1}
@@ -298,9 +303,6 @@ const Chat = () => {
                             </Box>
                         )}
                         <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap">
-                            <Button variant="contained" onClick={onSend}>
-                                Ask
-                            </Button>
                             <Box display="flex" gap={2} flexGrow={1}>
                                 <TextField
                                     id="title"
@@ -324,6 +326,7 @@ const Chat = () => {
                                     fullWidth
                                 />
                             </Box>
+                            &nbsp;
                             <Box display="flex" gap={2}>
                                 <Button variant="outlined" onClick={onUncheckAll}>
                                     Uncheck All
