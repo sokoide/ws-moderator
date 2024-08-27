@@ -7,9 +7,10 @@ import React, {
     useState,
     useRef,
     ChangeEvent,
+    KeyboardEvent,
 } from "react";
 import { AppContext } from "@/context/app-context";
-import { TextField, Box, Button, Divider } from "@mui/material";
+import { TextField, Box, Button } from "@mui/material";
 
 import MessageBox from "./messagebox";
 import { ModRequest } from "./types";
@@ -28,8 +29,12 @@ const Chat = () => {
     const { loginInfo } = context;
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [inputValue, setInputValue] = useState("");
+    const [suggestion, setSuggestion] = useState<string | null>(null);
+    const [showSuggestion, setShowSuggestion] = useState(false);
+    const [isImagineMode, setIsImagineMode] = useState(false); // New state to track imagine mode
     const [messages, setMessages] = useState<ModRequest[]>([]);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
+    const inputContainerRef = useRef<HTMLDivElement | null>(null);
     const eopRef = useRef<HTMLDivElement | null>(null);
     const titleRef = useRef<HTMLInputElement | null>(null);
     const userRef = useRef<HTMLInputElement | null>(null);
@@ -38,20 +43,18 @@ const Chat = () => {
     if (loginInfo != null && loginInfo.loggedIn === false) {
         if (typeof window !== "undefined") window.location.href = "/login";
     }
+
     const scrollToBottom = () => {
-         if (messagesEndRef.current) {
-            console.log("*** scrollToBottom");
-             messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-         }
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
     };
 
     useEffect(() => {
         const wsUrl = process.env.NEXT_PUBLIC_CHAT_WS ?? "undefined";
-        console.log("wsUrl: %O", wsUrl);
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
-            console.log("useEffect: onopen");
             ClientUtil.sendMessage(
                 ws,
                 "",
@@ -66,7 +69,6 @@ const Chat = () => {
 
         ws.onmessage = (e) => {
             let msg = JSON.parse(e.data) as ModRequest;
-            console.log("useEffect: onmessage: %O", msg);
             if (
                 (msg.client_id === "bot" && msg.id === "") ||
                 msg.user_email === (loginInfo?.email ?? "")
@@ -86,7 +88,6 @@ const Chat = () => {
         setSocket(ws);
 
         return () => {
-            console.log("useEffect: return");
             ws.close();
         };
     }, []);
@@ -99,7 +100,6 @@ const Chat = () => {
             }))
         );
 
-        // Use setTimeout to ensure scroll happens after DOM update
         const timer = setTimeout(() => {
             scrollToBottom();
         }, 10);
@@ -107,8 +107,50 @@ const Chat = () => {
         return () => clearTimeout(timer);
     }, [messages]);
 
+    useEffect(() => {
+        if (inputValue.startsWith("/imagine")) {
+            setSuggestion("Imagine Mode");
+            setShowSuggestion(true);
+            setIsImagineMode(true); // Set imagine mode when exact match
+        } else if (inputValue.startsWith("/")) {
+            setSuggestion("Press Enter to imagine mode");
+            setShowSuggestion(true);
+            setIsImagineMode(false);
+        } else {
+            setShowSuggestion(false);
+            setIsImagineMode(false); // Reset imagine mode when not in the command
+        }
+    }, [inputValue]);
+
+    const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+        setInputValue(e.target.value);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+        if (showSuggestion && e.key === "Enter") {
+            e.preventDefault();
+            if (!isImagineMode) {
+                setInputValue("/imagine");
+                setShowSuggestion(false);
+                setIsImagineMode(true); // Ensure imagine mode is set
+            }
+        }
+    };
+
+    const handleSuggestionClick = () => {
+        if (!isImagineMode) {
+            setInputValue("/imagine");
+            setShowSuggestion(false);
+            setIsImagineMode(true); // Ensure imagine mode is set
+        }
+    };
+
     const onSend = () => {
-        console.log("onSend: %O", inputValue);
+        if (isImagineMode) {
+            console.log("Imagine mode active, handling differently if needed");
+            // Handle imagine mode specific behavior
+        }
+
         let msg = ClientUtil.sendMessage(
             socket,
             "",
@@ -120,17 +162,15 @@ const Chat = () => {
             false
         );
         if (msg != null) {
-            // Note: don't add the message here.
-            // the requested message will be sent back from the server
-            // setMessages((prevMessages) => [...prevMessages, msg]);
             setInputValue("");
+            setShowSuggestion(false);
+            setIsImagineMode(false); // Reset imagine mode after sending
         } else {
             console.error("WebSocket is not open");
         }
     };
 
     const onComplete = () => {
-        console.log("onComplete");
         let id_txt_count: number = 0;
         let id_url_count: number = 0;
         let id_txt: string = "";
@@ -150,7 +190,6 @@ const Chat = () => {
         }
 
         checkboxStates.map(({ msg, checked }) => {
-            console.log("* %O:%O -> %O", msg.id, msg.message.kind, checked);
             if (checked) {
                 if (msg.message.kind === "txt") {
                     id_txt_count++;
@@ -186,25 +225,17 @@ const Chat = () => {
             "&employee=" +
             encodeURIComponent(employeeRef.current.value);
         const encoded_page = target_page + params;
-        console.log(encoded_page);
         router.push(encoded_page);
     };
 
     const onUncheckAll = () => {
-        console.log("onUncheckAll");
         setCheckboxesState(false);
     };
 
-    const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-        setInputValue(e.target.value);
-    };
-
-    // State to manage multiple checkboxes
     const [checkboxStates, setCheckboxStates] = useState<
         { msg: ModRequest; checked: boolean }[]
     >([]);
 
-    // Handler to update the checkbox state
     const handleCheckboxChange =
         (id: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
             setCheckboxStates((prevStates) =>
@@ -216,7 +247,6 @@ const Chat = () => {
             );
         };
 
-    // Function to programmatically check/uncheck checkboxes
     const setCheckboxesState = (checked: boolean) => {
         setCheckboxStates((prevStates) =>
             prevStates.map((checkbox) => ({ ...checkbox, checked }))
@@ -225,94 +255,86 @@ const Chat = () => {
 
     return (
         <>
-            <div ref={eopRef} className="container">
-                <Box>
-                    <Box
-                        my={4}
-                        mx={8}
-                        width="100%"
-                        sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            height: "90vh",
-                            overflowY: "auto",
-                        }}
-                    >
-                        <Box>
-                            {checkboxStates.map(({ msg, checked }) => (
-                                <MessageBox
-                                    msg={msg}
-                                    checked={checked}
-                                    onCheckboxChange={handleCheckboxChange(
-                                        msg.id
-                                    )}
-                                    key={uuid()}
-                                />
-                            ))}
-                        </Box>
-                        <div ref={messagesEndRef} />
+            <div ref={eopRef} className="container" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                <Box sx={{ flexGrow: 1, overflowY: "auto", paddingBottom: "10px" }}>
+                    <Box>
+                        {checkboxStates.map(({ msg, checked }) => (
+                            <MessageBox
+                                msg={msg}
+                                checked={checked}
+                                onCheckboxChange={handleCheckboxChange(
+                                    msg.id
+                                )}
+                                key={uuid()}
+                            />
+                        ))}
                     </Box>
-
-                    <p>
-                        [*] When completed, input <b>Title, User, Employee</b>,
-                        check <b>1 text &amp; 1 image</b> →{" "}
-                        <b>[Review &amp; Complete]</b> button{" "}
-                    </p>
-                    <Box
-                        display="flex"
-                        flexDirection="row"
-                        gap={1}
-                    >
+                    <div ref={messagesEndRef} />
+                </Box>
+                <div ref={inputContainerRef} style={{ padding: "10px", borderTop: "1px solid #ccc", background: "#fff", flexShrink: 0 }}>
+                    <Box display="flex" flexDirection="column" gap={1}>
                         <textarea
                             value={inputValue}
                             onChange={handleInputChange}
+                            onKeyDown={handleKeyDown}
                             placeholder="Type here..."
-                            rows={4}
+                            rows={2}
                             className="bordered-input"
+                            style={{ width: "100%", resize: "none" }}
                         />
-                        <Button variant="contained" onClick={onSend}>
-                            Ask
-                        </Button>
+                        {showSuggestion && suggestion && (
+                            <Box
+                                p={1}
+                                className={`suggestion-box ${isImagineMode ? "rainbow-suggestion" : ""}`} // Apply rainbow suggestion class conditionally
+                                onClick={handleSuggestionClick}
+                                sx={{
+                                    cursor: "pointer",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "4px",
+                                    backgroundColor: "#f9f9f9",
+                                }}
+                            >
+                                <p style={{ margin: 0 }}>{suggestion}</p>
+                            </Box>
+                        )}
+                        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap">
+                            <Button variant="contained" onClick={onSend}>
+                                Ask
+                            </Button>
+                            <Box display="flex" gap={2} flexGrow={1}>
+                                <TextField
+                                    id="title"
+                                    inputRef={titleRef}
+                                    label="Title of a book"
+                                    variant="outlined"
+                                    fullWidth
+                                />
+                                <TextField
+                                    id="user"
+                                    inputRef={userRef}
+                                    label="User who used AI today"
+                                    variant="outlined"
+                                    fullWidth
+                                />
+                                <TextField
+                                    id="employee"
+                                    inputRef={employeeRef}
+                                    label="Employee Name"
+                                    variant="outlined"
+                                    fullWidth
+                                />
+                            </Box>
+                            <Box display="flex" gap={2}>
+                                <Button variant="outlined" onClick={onUncheckAll}>
+                                    Uncheck All
+                                </Button>
+                                <Button variant="outlined" onClick={onComplete}>
+                                    Generate PDF
+                                </Button>
+                            </Box>
+                        </Box>
                     </Box>
-                    <Box display="flex"
-                        justifyContent="center"
-                        p={1}
-                        gap={4}
-                    >
-                        <TextField
-                            id="title"
-                            inputRef={titleRef}
-                            label="Title of a book"
-                            variant="outlined"
-                            style={{ width: "40%" }}
-                        />
-                        <TextField
-                            id="user"
-                            inputRef={userRef}
-                            label="User who used AI today"
-                            variant="outlined"
-                        />
-                        <TextField
-                            id="employee"
-                            inputRef={employeeRef}
-                            label="Employee Name"
-                            variant="outlined"
-                        />
-                    </Box>
-                    <Box
-                        display="flex"
-                        justifyContent="center"
-                        p={1}
-                        gap={4}
-                    >
-                        <Button variant="outlined" onClick={onUncheckAll}>
-                            Uncheck All
-                        </Button>
-                        <Button variant="outlined" onClick={onComplete}>
-                            Generate PDF
-                        </Button>
-                    </Box>
-                </Box>
+                </div>
             </div>
         </>
     );
