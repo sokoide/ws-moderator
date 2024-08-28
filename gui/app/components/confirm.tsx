@@ -149,9 +149,16 @@ const Confirm = () => {
             const link = document.createElement("a");
             link.href = url;
             link.download = email + ".pdf";
+
             document.body.appendChild(link);
-            link.click();
-            link.remove();
+
+            // Use a small delay to ensure Safari handles the link properly
+            setTimeout(() => {
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            }, 0);
+
             return true;
         } catch (error) {
             console.error("There was an error downloading the file:", error);
