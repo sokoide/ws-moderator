@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync/atomic"
 
@@ -46,6 +47,7 @@ type ClaudeContent struct {
 
 // globals
 var apiKey string
+var maxTokens int
 var claudeConns int32
 
 // functions
@@ -58,7 +60,7 @@ func callClaudeAPI(apiKey string, model string, history *[]ClaudeMessage) (strin
 
 	requestBody, err := json.Marshal(ClaudeRequest{
 		Model:     model,
-		MaxTokens: 1024,
+		MaxTokens: maxTokens,
 		Messages:  *history,
 	})
 	if err != nil {
@@ -134,7 +136,7 @@ func deserializeHistory(id string) []ClaudeMessage {
 	filepath := fmt.Sprintf("%s.gob", id)
 	file, err := os.Open(filepath)
 	if err != nil {
-		log.Errorf("Error opening file: %v", err)
+		log.Warnf("Failed to open %v", err)
 		return history
 	}
 	defer file.Close()
@@ -194,8 +196,22 @@ func StartConversation(id string, cin chan Request, cout chan Response) {
 }
 
 func init() {
+	var err error
 	apiKey = os.Getenv("CLAUDE_API_KEY")
 	if apiKey == "" {
 		panic("CLAUDE_API_KEY environment variable not set")
 	}
+
+	tokens := os.Getenv("CLAUDE_API_MAX_TOKENS")
+	if tokens == "" {
+		fmt.Println("CLAUDE_API_MAX_TOKENS is not set. Using the default value.")
+		maxTokens = 1024
+	} else {
+		// convert tokens into int
+		maxTokens, err = strconv.Atoi(tokens)
+		if err != nil {
+			fmt.Printf("Err: %v. Using the default value.\n", err)
+		}
+	}
+	fmt.Printf("maxTokens = %d\n", maxTokens)
 }

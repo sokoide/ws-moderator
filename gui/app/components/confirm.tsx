@@ -72,7 +72,6 @@ const Confirm = () => {
 
     const openEmailClient = () => {
         const subject = `Family Day 2024: ${title}`;
-        // const body = `*****************************\n* Attach the generated PDF here*\n******************************\n\n\nThank you very much for joining the family day 2024 and making \"${title}\". I hope you enjoyed the story & image generation!\n\nThank you,\n2024 Family Day`;
         const body =
             (process.env.NEXT_PUBLIC_EMAIL_HEADER ?? "") +
             `\n\n\n*****************************\n* Attach the generated PDF here*\n******************************\n\n\n` +

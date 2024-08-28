@@ -255,34 +255,56 @@ const Chat = () => {
 
     return (
         <>
-            <div ref={eopRef} className="container" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                <Box p={2} sx={{ flexGrow: 1, overflowY: "auto", paddingBottom: "10px" }}>
+            <div
+                ref={eopRef}
+                className="container"
+                style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "hidden",
+                }}
+            >
+                <Box
+                    p={2}
+                    sx={{
+                        flexGrow: 1,
+                        overflowY: "auto",
+                        paddingBottom: "10px",
+                    }}
+                >
                     <Box>
                         {checkboxStates.map(({ msg, checked }) => (
                             <MessageBox
                                 msg={msg}
                                 checked={checked}
-                                onCheckboxChange={handleCheckboxChange(
-                                    msg.id
-                                )}
+                                onCheckboxChange={handleCheckboxChange(msg.id)}
                                 key={uuid()}
                             />
                         ))}
                     </Box>
                     <div ref={messagesEndRef} />
                 </Box>
-                <div ref={inputContainerRef} style={{ padding: "10px", borderTop: "1px solid #ccc", background: "#fff", flexShrink: 0 }}>
+                <div
+                    ref={inputContainerRef}
+                    style={{
+                        padding: "10px",
+                        borderTop: "1px solid #ccc",
+                        background: "#fff",
+                        flexShrink: 0,
+                    }}
+                >
                     <Box display="flex" flexDirection="column" gap={1}>
                         <Box display="flex" flexDirection="row" gap={1}>
-                        <textarea
-                            value={inputValue}
-                            onChange={handleInputChange}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Type here..."
-                            rows={2}
-                            className="bordered-input"
-                            style={{ width: "100%", resize: "none" }}
-                        />
+                            <textarea
+                                value={inputValue}
+                                onChange={handleInputChange}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Type here..."
+                                rows={4}
+                                className="bordered-input"
+                                style={{ width: "100%", resize: "none" }}
+                            />
                             <Button variant="contained" onClick={onSend}>
                                 Ask
                             </Button>
@@ -290,7 +312,9 @@ const Chat = () => {
                         {showSuggestion && suggestion && (
                             <Box
                                 p={1}
-                                className={`suggestion-box ${isImagineMode ? "rainbow-suggestion" : ""}`} // Apply rainbow suggestion class conditionally
+                                className={`suggestion-box ${
+                                    isImagineMode ? "rainbow-suggestion" : ""
+                                }`} // Apply rainbow suggestion class conditionally
                                 onClick={handleSuggestionClick}
                                 sx={{
                                     cursor: "pointer",
@@ -302,38 +326,53 @@ const Chat = () => {
                                 <p style={{ margin: 0 }}>{suggestion}</p>
                             </Box>
                         )}
-                        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap">
-                            <Box display="flex" gap={2} flexGrow={1}>
-                                <TextField
-                                    id="title"
-                                    inputRef={titleRef}
-                                    label="Title of a book"
-                                    variant="outlined"
-                                    fullWidth
-                                />
-                                <TextField
-                                    id="user"
-                                    inputRef={userRef}
-                                    label="User who used AI today"
-                                    variant="outlined"
-                                    fullWidth
-                                />
-                                <TextField
-                                    id="employee"
-                                    inputRef={employeeRef}
-                                    label="Employee Name"
-                                    variant="outlined"
-                                    fullWidth
-                                />
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                            flexWrap="wrap"
+                        >
+                            <Box display="flex" flexDirection="row" p={1}>
+                                <Box display="flex" gap={2} flexGrow={1}>
+                                    <TextField
+                                        id="title"
+                                        inputRef={titleRef}
+                                        label="Title of a book"
+                                        variant="outlined"
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        id="user"
+                                        inputRef={userRef}
+                                        label="User who used AI today"
+                                        variant="outlined"
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        id="employee"
+                                        inputRef={employeeRef}
+                                        label="Employee Name"
+                                        variant="outlined"
+                                        fullWidth
+                                    />
+                                </Box>
                             </Box>
-                            &nbsp;
-                            <Box display="flex" gap={2}>
-                                <Button variant="outlined" onClick={onUncheckAll}>
-                                    Uncheck All
-                                </Button>
-                                <Button variant="outlined" onClick={onComplete}>
-                                    Generate PDF
-                                </Button>
+                            <Box display="flex" flexDirection="row" gap={1}>
+                                <Box display="flex" gap={2}>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={onUncheckAll}
+                                    >
+                                        Uncheck All
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={onComplete}
+                                    >
+                                        Generate PDF
+                                    </Button>
+                                </Box>
                             </Box>
                         </Box>
                     </Box>
