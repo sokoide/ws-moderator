@@ -17,7 +17,11 @@ const boldFont = "NotoSansJP-Bold.ttf"
 
 func isAllEnglish(text string) bool {
 	// check the first 100 chars
-	target := text[:100]
+	len := len(text)
+	if len > 100 {
+		len = 100
+	}
+	target := text[:len]
 	nonEnglishChars := 0
 
 	for _, char := range target {
@@ -27,7 +31,7 @@ func isAllEnglish(text string) bool {
 	}
 
 	// if <10% is non English chars, assume they are symbols and return true
-	if nonEnglishChars < 10 {
+	if nonEnglishChars < len/10 {
 		return true
 	}
 	return false

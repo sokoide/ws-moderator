@@ -45,7 +45,10 @@ const Login = () => {
                         <p>
                             Note: The <b>Employee Personal Email</b>(case
                             sensitive) will be used as the chat conversation
-                            key.
+                            unique key.
+                        </p>
+                        <p>
+                            If you have 2 users, please add -1 or -2 at the end of your email. e.g. <b>foo@bar.com-2</b>
                         </p>
                         <hr />
                         <div className="input">

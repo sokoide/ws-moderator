@@ -70,6 +70,10 @@ const Confirm = () => {
         }
     };
 
+    const removeTrailingNumberSuffix = (str: string): string => {
+        return str.replace(/-\d+$/, '');
+    }
+
     const openEmailClient = () => {
         const subject = `Family Day 2024: ${title}`;
         const body =
@@ -77,7 +81,8 @@ const Confirm = () => {
             `\n\n\n*****************************\n* Attach the generated PDF here*\n******************************\n\n\n` +
             (process.env.NEXT_PUBLIC_EMAIL_FOOTER ?? "");
 
-        const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
+        const sendToEmail = removeTrailingNumberSuffix(email ?? "")
+        const mailtoLink = `mailto:${sendToEmail}?subject=${encodeURIComponent(
             subject
         )}&body=${encodeURIComponent(body)}`;
 
